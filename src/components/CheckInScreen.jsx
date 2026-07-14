@@ -1,15 +1,39 @@
 import { useState, useEffect, useMemo } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient"; // adjust path to your Supabase client
 import AddHabitModal from "./AddHabitModal";
+import HabitHeatmap from "./HabitHeatmap";
 import "./CheckInScreen.css";
 
-const MOCK_HABITS = [];
+/**
+ * EMBER — Check-in Screen
+ * -------------------------------------------------------------
+ * Wiring notes for your Supabase project (already live schema):
+ *
+ * - habits: id, user_id, name, icon, color, frequency, is_active,
+ *           current_streak, longest_streak, last_checkin_date
+ * - habit_checkins: id, habit_id, user_id, checkin_date, note, created_at
+ * - A DB trigger (on_checkin_insert) already updates current_streak
+ *   on habits automatically when a checkin row is inserted.
+ *   -> This component does NOT recompute streaks client-side.
+ *      It just inserts the checkin and re-fetches habits after.
+ *
+ * Replace MOCK_HABITS below with a real fetch (see fetchHabits()).
+ * -------------------------------------------------------------
+ */
 
+const MOCK_HABITS = [
+  { id: "1", name: "Cold shower", icon: "💧", current_streak: 12, checkedInToday: false },
+  { id: "2", name: "Read 20 pages", icon: "📖", current_streak: 34, checkedInToday: true },
+  { id: "3", name: "No sugar", icon: "🍬", current_streak: 3, checkedInToday: false },
+  { id: "4", name: "Gym", icon: "🏋️", current_streak: 58, checkedInToday: false },
+];
+
+// Ember glow intensity scales with streak length — the signature element.
 function emberStyle(streak) {
   const clamped = Math.min(streak, 60);
-  const glow = 4 + (clamped / 60) * 22;
+  const glow = 4 + (clamped / 60) * 22; // px blur radius
   const opacity = 0.35 + (clamped / 60) * 0.65;
-  const hue = streak >= 30 ? "#F5A623" : "#EA580C";
+  const hue = streak >= 30 ? "#F5A623" : "#EA580C"; // brighter gold once streak matures
   return {
     boxShadow: `0 0 ${glow}px ${hue}`,
     backgroundColor: hue,
@@ -26,6 +50,7 @@ export default function CheckInScreen({ userId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [heatmapHabit, setHeatmapHabit] = useState(null);
 
   useEffect(() => {
     if (userId) fetchHabits();
@@ -72,8 +97,9 @@ export default function CheckInScreen({ userId }) {
   }
 
   async function toggleCheckIn(habit) {
-    if (habit.checkedInToday) return;
+    if (habit.checkedInToday) return; // MVP: no un-checking, keep it simple + honest
 
+    // Optimistic UI update
     setHabits((prev) =>
       prev.map((h) =>
         h.id === habit.id
@@ -83,12 +109,14 @@ export default function CheckInScreen({ userId }) {
     );
 
     const { error: insertErr } = await supabase.from("habit_checkins").insert({
-  habit_id: habit.id,
-  user_id: userId,
-  checkin_date: todayISO(),
-});
+      habit_id: habit.id,
+      user_id: userId,
+      checkin_date: todayISO(),
+      status: "done",
+    });
 
     if (insertErr) {
+      // Roll back optimistic update on failure
       setHabits((prev) =>
         prev.map((h) =>
           h.id === habit.id
@@ -100,6 +128,7 @@ export default function CheckInScreen({ userId }) {
       return;
     }
 
+    // Re-sync with DB-computed streak (trigger already updated it server-side)
     fetchHabits();
   }
 
@@ -148,7 +177,12 @@ export default function CheckInScreen({ userId }) {
             <span className="ember-icon">{habit.icon}</span>
 
             <div className="ember-row-main">
-              <span className="ember-name">{habit.name}</span>
+              <button
+                className="ember-name ember-name-btn"
+                onClick={() => setHeatmapHabit(habit)}
+              >
+                {habit.name}
+              </button>
               <div className="ember-streak">
                 <span className="ember-dot" style={emberStyle(habit.current_streak)} />
                 <span className="ember-streak-count">{habit.current_streak}d</span>
@@ -175,6 +209,14 @@ export default function CheckInScreen({ userId }) {
             ]);
             setShowAddModal(false);
           }}
+        />
+      )}
+
+      {heatmapHabit && (
+        <HabitHeatmap
+          habit={heatmapHabit}
+          userId={userId}
+          onClose={() => setHeatmapHabit(null)}
         />
       )}
     </div>

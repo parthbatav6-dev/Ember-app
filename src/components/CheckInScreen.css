@@ -1,6 +1,3 @@
-/* EMBER — Design tokens
-   Charcoal, not black. Ember glow, not neon. Discipline, not cheer. */
-
 .ember-screen {
   --charcoal: #1c1917;
   --panel: #292420;
@@ -137,13 +134,22 @@
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  transition: text-decoration-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.ember-name-btn:hover {
-  text-decoration-color: var(--ash);
+.ember-name-hint {
+  font-size: 10px;
+  color: var(--ash);
+  opacity: 0.6;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.ember-name-btn:hover .ember-name-hint,
+.ember-name-btn:active .ember-name-hint {
+  opacity: 1;
+  transform: translateX(2px);
 }
 
 .ember-streak {

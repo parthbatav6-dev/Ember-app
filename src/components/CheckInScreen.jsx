@@ -177,11 +177,12 @@ export default function CheckInScreen({ userId }) {
 
             <div className="ember-row-main">
               <button
-                className="ember-name ember-name-btn"
-                onClick={() => setHeatmapHabit(habit)}
-              >
-                {habit.name}
-              </button>
+     className="ember-name ember-name-btn"
+     onClick={() => setHeatmapHabit(habit)}
+   >
+     {habit.name}
+     <span className="ember-name-hint">▸</span>
+   </button>
               <div className="ember-streak">
                 <span className="ember-dot" style={emberStyle(habit.current_streak)} />
                 <span className="ember-streak-count">{habit.current_streak}d</span>

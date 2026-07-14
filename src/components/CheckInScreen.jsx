@@ -112,7 +112,6 @@ export default function CheckInScreen({ userId }) {
       habit_id: habit.id,
       user_id: userId,
       checkin_date: todayISO(),
-      status: "done",
     });
 
     if (insertErr) {

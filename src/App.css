@@ -1,0 +1,48 @@
+.ember-app-loading {
+  min-height: 100vh;
+  background: #1c1917;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ember-app-loading-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ea580c;
+  box-shadow: 0 0 16px #ea580c;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ember-app-loading-dot {
+    animation: none;
+  }
+}
+
+.ember-app {
+  position: relative;
+}
+
+.ember-app-logout {
+  position: absolute;
+  top: 32px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #57534e;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ember-app-logout:hover {
+  color: #e7dfd3;
+}

@@ -1,0 +1,183 @@
+.ember-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+
+@media (min-width: 480px) {
+  .ember-modal-backdrop {
+    align-items: center;
+  }
+}
+
+.ember-modal {
+  --charcoal: #1c1917;
+  --panel: #292420;
+  --ash: #57534e;
+  --parchment: #e7dfd3;
+  --ember: #ea580c;
+  --ember-bright: #f5a623;
+
+  background: var(--charcoal);
+  color: var(--parchment);
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 16px 16px 0 0;
+  padding: 24px 20px 32px;
+  font-family: "Inter", -apple-system, sans-serif;
+}
+
+@media (min-width: 480px) {
+  .ember-modal {
+    border-radius: 16px;
+  }
+}
+
+.ember-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ember-modal-title {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 500;
+  font-style: italic;
+  font-size: 22px;
+  margin: 0;
+}
+
+.ember-modal-close {
+  background: none;
+  border: none;
+  color: var(--ash);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.ember-modal-close:hover {
+  color: var(--parchment);
+}
+
+.ember-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ember-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ember-field label {
+  font-size: 13px;
+  color: var(--ash);
+}
+
+.ember-field input,
+.ember-field select {
+  background: var(--panel);
+  border: 1px solid rgba(231, 223, 211, 0.1);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--parchment);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.ember-field input:focus,
+.ember-field select:focus {
+  border-color: var(--ember);
+}
+
+.ember-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.ember-icon-option {
+  background: var(--panel);
+  border: 1px solid rgba(231, 223, 211, 0.1);
+  border-radius: 8px;
+  font-size: 20px;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.ember-icon-option.is-selected {
+  border-color: var(--ember);
+  background: rgba(234, 88, 12, 0.12);
+}
+
+.ember-day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.ember-day-option {
+  background: var(--panel);
+  border: 1px solid rgba(231, 223, 211, 0.1);
+  border-radius: 8px;
+  color: var(--ash);
+  font-size: 13px;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ember-day-option.is-selected {
+  border-color: var(--ember);
+  background: var(--ember);
+  color: var(--charcoal);
+  font-weight: 600;
+}
+
+.ember-modal-error {
+  font-size: 13px;
+  color: #fca5a5;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin: 0;
+}
+
+.ember-modal-submit {
+  background: var(--ember);
+  color: var(--charcoal);
+  border: none;
+  border-radius: 8px;
+  padding: 13px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.ember-modal-submit:hover:not(:disabled) {
+  background: var(--ember-bright);
+}
+
+.ember-modal-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.ember-modal-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,0 +1,207 @@
+.ember-screen {
+  --charcoal: #1c1917;
+  --panel: #292420;
+  --ash: #57534e;
+  --parchment: #e7dfd3;
+  --ember: #ea580c;
+  --ember-bright: #f5a623;
+  --error: #dc2626;
+
+  min-height: 100vh;
+  background: var(--charcoal);
+  color: var(--parchment);
+  font-family: "Inter", -apple-system, sans-serif;
+  padding: 32px 20px 80px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.ember-header {
+  margin-bottom: 32px;
+}
+
+.ember-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin: 0 0 8px;
+}
+
+.ember-title {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 500;
+  font-style: italic;
+  font-size: 28px;
+  line-height: 1.15;
+  margin: 0 0 10px;
+  color: var(--parchment);
+}
+
+.ember-subcount {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: var(--ash);
+  margin: 0;
+}
+
+.ember-error {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #fca5a5;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.ember-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ember-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--panel);
+  border: 1px solid rgba(231, 223, 211, 0.06);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.ember-row.is-done {
+  opacity: 0.55;
+}
+
+.ember-checkbox {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 8px;
+  border: 1.5px solid var(--ash);
+  background: transparent;
+  color: var(--charcoal);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.ember-checkbox:not(:disabled):hover {
+  border-color: var(--ember);
+  background: rgba(234, 88, 12, 0.1);
+}
+
+.ember-row.is-done .ember-checkbox {
+  background: var(--ember);
+  border-color: var(--ember);
+  color: var(--charcoal);
+}
+
+.ember-icon {
+  font-size: 20px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.ember-row-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ember-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--parchment);
+}
+
+.ember-streak {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ember-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: flicker 2.4s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.ember-streak-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: var(--ash);
+  min-width: 26px;
+}
+
+.ember-loading {
+  text-align: center;
+  color: var(--ash);
+  font-size: 13px;
+  margin-top: 20px;
+}
+
+.ember-empty {
+  text-align: center;
+  padding: 48px 20px;
+  border: 1px dashed rgba(231, 223, 211, 0.15);
+  border-radius: 12px;
+}
+
+.ember-empty-title {
+  font-family: "Fraunces", Georgia, serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--parchment);
+  margin: 0 0 6px;
+}
+
+.ember-empty-copy {
+  font-size: 13px;
+  color: var(--ash);
+  margin: 0;
+}
+
+.ember-add-btn {
+  width: 100%;
+  background: none;
+  border: 1px dashed rgba(231, 223, 211, 0.2);
+  border-radius: 12px;
+  color: var(--ash);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 14px;
+  margin-top: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ember-add-btn:hover {
+  border-color: var(--ember);
+  color: var(--ember-bright);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ember-dot {
+    animation: none;
+  }
+}

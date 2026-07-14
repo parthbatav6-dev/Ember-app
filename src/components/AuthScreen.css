@@ -1,0 +1,151 @@
+.ember-auth-screen {
+  --charcoal: #1c1917;
+  --panel: #292420;
+  --ash: #57534e;
+  --parchment: #e7dfd3;
+  --ember: #ea580c;
+  --ember-bright: #f5a623;
+  --error: #dc2626;
+
+  min-height: 100vh;
+  background: var(--charcoal);
+  color: var(--parchment);
+  font-family: "Inter", -apple-system, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.ember-auth-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+.ember-auth-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ember-bright);
+  margin: 0 0 12px;
+}
+
+.ember-auth-title {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 500;
+  font-style: italic;
+  font-size: 30px;
+  line-height: 1.2;
+  margin: 0 0 28px;
+  color: var(--parchment);
+}
+
+.ember-auth-copy {
+  font-size: 14px;
+  color: var(--ash);
+  line-height: 1.6;
+}
+
+.ember-auth-copy strong {
+  color: var(--parchment);
+  font-weight: 500;
+}
+
+.ember-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ember-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ember-field label {
+  font-size: 13px;
+  color: var(--ash);
+}
+
+.ember-field input {
+  background: var(--panel);
+  border: 1px solid rgba(231, 223, 211, 0.1);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--parchment);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.ember-field input::placeholder {
+  color: var(--ash);
+}
+
+.ember-field input:focus {
+  border-color: var(--ember);
+}
+
+.ember-auth-error {
+  font-size: 13px;
+  color: #fca5a5;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin: 0;
+}
+
+.ember-auth-submit {
+  background: var(--ember);
+  color: var(--charcoal);
+  border: none;
+  border-radius: 8px;
+  padding: 13px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.ember-auth-submit:hover:not(:disabled) {
+  background: var(--ember-bright);
+}
+
+.ember-auth-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.ember-auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ember-auth-toggle,
+.ember-auth-link-btn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--ash);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 20px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ember-auth-toggle:hover,
+.ember-auth-link-btn:hover {
+  color: var(--parchment);
+}
+
+@media (max-width: 400px) {
+  .ember-auth-title {
+    font-size: 26px;
+  }
+}

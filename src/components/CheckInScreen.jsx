@@ -83,11 +83,10 @@ export default function CheckInScreen({ userId }) {
     );
 
     const { error: insertErr } = await supabase.from("habit_checkins").insert({
-      habit_id: habit.id,
-      user_id: userId,
-      checkin_date: todayISO(),
-      status: "done",
-    });
+  habit_id: habit.id,
+  user_id: userId,
+  checkin_date: todayISO(),
+});
 
     if (insertErr) {
       setHabits((prev) =>

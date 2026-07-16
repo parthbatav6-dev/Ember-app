@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "../lib/supabaseClient"; // adjust path to your Supabase client
 import AddHabitModal from "./AddHabitModal";
+import EditHabitModal from "./EditHabitModal";
 import HabitHeatmap from "./HabitHeatmap";
 import "./CheckInScreen.css";
 
@@ -51,6 +52,7 @@ export default function CheckInScreen({ userId }) {
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [heatmapHabit, setHeatmapHabit] = useState(null);
+  const [editingHabit, setEditingHabit] = useState(null);
 
   useEffect(() => {
     if (userId) fetchHabits();
@@ -177,17 +179,25 @@ export default function CheckInScreen({ userId }) {
 
             <div className="ember-row-main">
               <button
-     className="ember-name ember-name-btn"
-     onClick={() => setHeatmapHabit(habit)}
-   >
-     {habit.name}
-     <span className="ember-name-hint">▸</span>
-   </button>
+                className="ember-name ember-name-btn"
+                onClick={() => setHeatmapHabit(habit)}
+              >
+                {habit.name}
+                <span className="ember-name-hint">▸</span>
+              </button>
               <div className="ember-streak">
                 <span className="ember-dot" style={emberStyle(habit.current_streak)} />
                 <span className="ember-streak-count">{habit.current_streak}d</span>
               </div>
             </div>
+
+            <button
+              className="ember-edit-btn"
+              onClick={() => setEditingHabit(habit)}
+              aria-label={`Edit ${habit.name}`}
+            >
+              ✎
+            </button>
           </li>
         ))}
       </ul>
@@ -217,6 +227,27 @@ export default function CheckInScreen({ userId }) {
           habit={heatmapHabit}
           userId={userId}
           onClose={() => setHeatmapHabit(null)}
+        />
+      )}
+
+      {editingHabit && (
+        <EditHabitModal
+          habit={editingHabit}
+          onClose={() => setEditingHabit(null)}
+          onUpdated={(updatedHabit) => {
+            setHabits((prev) =>
+              prev.map((h) =>
+                h.id === updatedHabit.id
+                  ? { ...h, name: updatedHabit.name, icon: updatedHabit.icon }
+                  : h
+              )
+            );
+            setEditingHabit(null);
+          }}
+          onDeleted={(habitId) => {
+            setHabits((prev) => prev.filter((h) => h.id !== habitId));
+            setEditingHabit(null);
+          }}
         />
       )}
     </div>

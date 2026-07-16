@@ -1,3 +1,6 @@
+/* EMBER — Design tokens
+   Charcoal, not black. Ember glow, not neon. Discipline, not cheer. */
+
 .ember-screen {
   --charcoal: #1c1917;
   --panel: #292420;
@@ -176,6 +179,22 @@
   font-size: 12px;
   color: var(--ash);
   min-width: 26px;
+}
+
+.ember-edit-btn {
+  background: none;
+  border: none;
+  color: var(--ash);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 6px;
+  opacity: 0.5;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.ember-edit-btn:hover {
+  opacity: 1;
+  color: var(--ember-bright);
 }
 
 .ember-loading {

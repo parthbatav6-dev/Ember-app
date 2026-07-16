@@ -53,6 +53,21 @@ export default function CheckInScreen({ userId }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [heatmapHabit, setHeatmapHabit] = useState(null);
   const [editingHabit, setEditingHabit] = useState(null);
+  const [notifStatus, setNotifStatus] = useState("unknown"); // unknown | default | granted | denied
+
+  useEffect(() => {
+    if (typeof Notification !== "undefined") {
+      setNotifStatus(Notification.permission);
+    }
+  }, []);
+
+  async function enableNotifications() {
+    if (!window.OneSignalDeferred) return;
+    window.OneSignalDeferred.push(async function (OneSignal) {
+      await OneSignal.Notifications.requestPermission();
+      setNotifStatus(Notification.permission);
+    });
+  }
 
   useEffect(() => {
     if (userId) fetchHabits();
@@ -149,6 +164,13 @@ export default function CheckInScreen({ userId }) {
       </header>
 
       {error && <div className="ember-error">{error}</div>}
+
+      {notifStatus === "default" && (
+        <div className="ember-notif-banner">
+          <span>Get a nudge when you haven't checked in.</span>
+          <button onClick={enableNotifications}>Turn on reminders</button>
+        </div>
+      )}
 
       {!loading && habits.length === 0 && (
         <div className="ember-empty">

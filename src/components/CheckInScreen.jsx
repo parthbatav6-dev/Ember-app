@@ -80,7 +80,7 @@ export default function CheckInScreen({ userId }) {
 
     const { data: habitRows, error: habitsErr } = await supabase
       .from("habits")
-      .select("id, name, icon, current_streak, is_active")
+      .select("id, name, icon, current_streak, is_active, reminder_time")
       .eq("user_id", userId)
       .eq("is_active", true)
       .order("created_at", { ascending: true });

@@ -1,6 +1,21 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient"; // adjust path to your Supabase client
 import "./AddHabitModal.css";
+
+/**
+ * EMBER — Add habit modal
+ * -------------------------------------------------------------
+ * - Inserts directly into the `habits` table.
+ * - The DB trigger `enforce_habit_limit` blocks a 6th active habit
+ *   for free-tier users — this component surfaces that error in
+ *   plain language rather than the raw Postgres exception text.
+ * - Icon picker kept intentionally small (8 options) — this is a
+ *   discipline app, not a customization playground. Fewer choices,
+ *   faster habit creation, less decision fatigue at signup.
+ * - onCreated(newHabit) is called on success so the parent
+ *   (CheckInScreen) can refetch or optimistically append.
+ * -------------------------------------------------------------
+ */
 
 const ICONS = ["💧", "📖", "🏋️", "🧘", "🍬", "🚭", "☀️", "✍️"];
 const FREQUENCIES = [
@@ -23,6 +38,7 @@ export default function AddHabitModal({ userId, onClose, onCreated }) {
   const [icon, setIcon] = useState(ICONS[0]);
   const [frequency, setFrequency] = useState("daily");
   const [customDays, setCustomDays] = useState([]);
+  const [reminderTime, setReminderTime] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -55,6 +71,7 @@ export default function AddHabitModal({ userId, onClose, onCreated }) {
         icon,
         frequency,
         custom_days: frequency === "custom" ? customDays : null,
+        reminder_time: reminderTime || null,
         is_active: true,
       })
       .select()
@@ -150,6 +167,16 @@ export default function AddHabitModal({ userId, onClose, onCreated }) {
               </div>
             </div>
           )}
+
+          <div className="ember-field">
+            <label htmlFor="reminderTime">Reminder (optional)</label>
+            <input
+              id="reminderTime"
+              type="time"
+              value={reminderTime}
+              onChange={(e) => setReminderTime(e.target.value)}
+            />
+          </div>
 
           {error && <p className="ember-modal-error">{error}</p>}
 

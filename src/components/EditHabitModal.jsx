@@ -21,6 +21,7 @@ const ICONS = ["💧", "📖", "🏋️", "🧘", "🍬", "🚭", "☀️", "✍
 export default function EditHabitModal({ habit, onClose, onUpdated, onDeleted }) {
   const [name, setName] = useState(habit.name);
   const [icon, setIcon] = useState(habit.icon);
+  const [reminderTime, setReminderTime] = useState(habit.reminder_time || "");
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -38,7 +39,7 @@ export default function EditHabitModal({ habit, onClose, onUpdated, onDeleted })
 
     const { data, error: updateErr } = await supabase
       .from("habits")
-      .update({ name: name.trim(), icon })
+      .update({ name: name.trim(), icon, reminder_time: reminderTime || null })
       .eq("id", habit.id)
       .select()
       .single();
@@ -111,6 +112,16 @@ export default function EditHabitModal({ habit, onClose, onUpdated, onDeleted })
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="ember-field">
+              <label htmlFor="editReminderTime">Reminder (optional)</label>
+              <input
+                id="editReminderTime"
+                type="time"
+                value={reminderTime}
+                onChange={(e) => setReminderTime(e.target.value)}
+              />
             </div>
 
             {error && <p className="ember-modal-error">{error}</p>}

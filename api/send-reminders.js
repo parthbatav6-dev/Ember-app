@@ -36,8 +36,11 @@ export default async function handler(req, res) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  const today = new Date().toISOString().slice(0, 10);
-  const nowTime = new Date().toTimeString().slice(0, 5); // "HH:MM"
+  const nowUTC = new Date();
+   const istOffsetMs = 5.5 * 60 * 60 * 1000;
+   const nowIST = new Date(nowUTC.getTime() + istOffsetMs);
+   const today = nowIST.toISOString().slice(0, 10);
+   const nowTime = nowIST.toISOString().slice(11, 16); // "HH:MM"
 
   // 1. Get all active habits with a reminder time set
   const { data: habits, error: habitsErr } = await supabase

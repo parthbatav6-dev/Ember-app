@@ -1,0 +1,38 @@
+.ember-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #292420;
+  border: 1px solid rgba(231, 223, 211, 0.06);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.ember-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.ember-stat-value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: #f5a623;
+}
+
+.ember-stat-label {
+  font-size: 11px;
+  color: #57534e;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ember-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(231, 223, 211, 0.08);
+}

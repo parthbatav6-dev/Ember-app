@@ -3,6 +3,8 @@ import { supabase } from "../lib/supabaseClient"; // adjust path to your Supabas
 import AddHabitModal from "./AddHabitModal";
 import EditHabitModal from "./EditHabitModal";
 import HabitHeatmap from "./HabitHeatmap";
+import WeeklyStats from "./WeeklyStats";
+import WeekBar from "./WeekBar";
 import "./CheckInScreen.css";
 
 /**
@@ -53,7 +55,8 @@ export default function CheckInScreen({ userId }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [heatmapHabit, setHeatmapHabit] = useState(null);
   const [editingHabit, setEditingHabit] = useState(null);
-  const [notifStatus, setNotifStatus] = useState("unknown"); // unknown | default | granted | denied
+  const [notifStatus, setNotifStatus] = useState("unknown");
+  const [last7Checkins, setLast7Checkins] = useState([]); // unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -104,6 +107,17 @@ export default function CheckInScreen({ userId }) {
     }
 
     const checkedInIds = new Set((todaysCheckins || []).map((c) => c.habit_id));
+    const sevenDaysAgo = new Date();
+sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+const sevenDaysAgoISO = sevenDaysAgo.toISOString().slice(0, 10);
+
+const { data: weekCheckins } = await supabase
+  .from("habit_checkins")
+  .select("habit_id, checkin_date")
+  .eq("user_id", userId)
+  .gte("checkin_date", sevenDaysAgoISO);
+
+setLast7Checkins(weekCheckins || []);
     setHabits(
       (habitRows || []).map((h) => ({
         ...h,
@@ -162,6 +176,7 @@ export default function CheckInScreen({ userId }) {
           {doneCount} of {habits.length} done
         </p>
       </header>
+      <WeeklyStats habits={habits} last7DaysCheckins={last7Checkins} />
 
       {error && <div className="ember-error">{error}</div>}
 
@@ -211,6 +226,15 @@ export default function CheckInScreen({ userId }) {
                 <span className="ember-dot" style={emberStyle(habit.current_streak)} />
                 <span className="ember-streak-count">{habit.current_streak}d</span>
               </div>
+              <WeekBar
+  checkinDates={
+    new Set(
+      last7Checkins
+        .filter((c) => c.habit_id === habit.id)
+        .map((c) => c.checkin_date)
+    )
+  }
+/>
             </div>
 
             <button

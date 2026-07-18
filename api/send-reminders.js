@@ -31,6 +31,12 @@
 import { createClient } from "@supabase/supabase-js";
 
 export default async function handler(req, res) {
+  // Reject anyone who doesn't know the shared secret
+  const incomingSecret = req.headers["x-cron-secret"];
+  if (incomingSecret !== process.env.CRON_SECRET) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
   const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY

@@ -3,6 +3,7 @@ import { supabase } from "./lib/supabaseClient"; // adjust path if your structur
 import AuthScreen from "./components/AuthScreen";
 import CheckInScreen from "./components/CheckInScreen";
 import "./App.css";
+import { initPush, registerPushUser } from "./lib/pushNotifications";
 
 /**
  * EMBER — Root app shell
@@ -11,9 +12,12 @@ import "./App.css";
  * routes between AuthScreen and CheckInScreen accordingly.
  *
  * - On mount: checks for an existing session (so refreshing the
- *   page doesn't log the user out).
+ *   page doesn't log the user out), and initializes OneSignal.
  * - Subscribes to onAuthStateChange so login/logout/token-refresh
  *   anywhere in the app keeps this state in sync automatically.
+ * - Once a session exists, registers this device with OneSignal
+ *   under the user's Supabase id (registerPushUser handles both
+ *   the permission prompt and OneSignal.login internally).
  * - Cleans up the subscription on unmount to avoid leaks.
  * -------------------------------------------------------------
  */
@@ -22,26 +26,13 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Tell OneSignal which Ember user this browser belongs to, so
-  // scheduled reminders can be targeted per-person via external_id.
-  // Safe to call repeatedly — OneSignal dedupes on the same ID.
-  function identifyOneSignalUser(userId) {
-    if (!window.OneSignalDeferred) return;
-    window.OneSignalDeferred.push(async function (OneSignal) {
-      try {
-        await OneSignal.login(userId);
-      } catch (e) {
-        // Non-fatal — user may not have granted notification permission yet
-      }
-    });
-  }
-
+  // Runs once on mount: check for an existing session + init OneSignal
   useEffect(() => {
-    // Check for an existing session on load (e.g. page refresh)
+    initPush();
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      if (session?.user?.id) identifyOneSignalUser(session.user.id);
     });
 
     // Keep session state in sync with any auth change,
@@ -50,11 +41,18 @@ export default function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session?.user?.id) identifyOneSignalUser(session.user.id);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Runs whenever session changes: register this device with OneSignal
+  // once we have a real logged-in user
+  useEffect(() => {
+    if (session?.user?.id) {
+      registerPushUser(session.user.id);
+    }
+  }, [session]);
 
   async function handleLogout() {
     await supabase.auth.signOut();

@@ -1,9 +1,23 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient"; // adjust path to your Supabase client
 import "./AuthScreen.css";
 
-export default function AuthScreen({ onAuthSuccess }) {
-  const [mode, setMode] = useState("login");
+/**
+ * EMBER — Auth screen (signup / login)
+ * -------------------------------------------------------------
+ * When arriving from FirstHabitStep, draftHabit is passed in and
+ * shown above the form as a reminder of what's being saved — the
+ * button says "Continue" (never "Sign up"), so account creation
+ * reads as finishing something already started, not a cold ask.
+ *
+ * On successful signup, onAuthSuccess(session) fires — App.jsx
+ * is responsible for then creating the real habit row from
+ * draftHabit, since this component has no habits-table knowledge.
+ * -------------------------------------------------------------
+ */
+
+export default function AuthScreen({ onAuthSuccess, draftHabit }) {
+  const [mode, setMode] = useState(draftHabit ? "signup" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -78,7 +92,8 @@ export default function AuthScreen({ onAuthSuccess }) {
           <h1 className="ember-auth-title">Check your inbox.</h1>
           <p className="ember-auth-copy">
             We sent a confirmation link to <strong>{email}</strong>. Confirm
-            your email, then come back and log in.
+            your email, then come back and log in
+            {draftHabit ? ` — "${draftHabit.name}" is saved and waiting.` : "."}
           </p>
           <button
             className="ember-auth-link-btn"
@@ -96,8 +111,19 @@ export default function AuthScreen({ onAuthSuccess }) {
       <div className="ember-auth-card">
         <p className="ember-auth-eyebrow">Ember</p>
         <h1 className="ember-auth-title">
-          {mode === "login" ? "Welcome back." : "Start the fire."}
+          {draftHabit
+            ? "Save your habit."
+            : mode === "login"
+            ? "Welcome back."
+            : "Start the fire."}
         </h1>
+
+        {draftHabit && (
+          <div className="ember-auth-draft">
+            <span className="ember-auth-draft-icon">{draftHabit.icon}</span>
+            <span className="ember-auth-draft-name">{draftHabit.name}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="ember-auth-form">
           {mode === "signup" && (
@@ -143,23 +169,27 @@ export default function AuthScreen({ onAuthSuccess }) {
           <button type="submit" className="ember-auth-submit" disabled={loading}>
             {loading
               ? "Please wait…"
+              : draftHabit
+              ? "Continue"
               : mode === "login"
               ? "Log in"
               : "Create account"}
           </button>
         </form>
 
-        <button
-          className="ember-auth-toggle"
-          onClick={() => {
-            setMode(mode === "login" ? "signup" : "login");
-            setError(null);
-          }}
-        >
-          {mode === "login"
-            ? "New here? Create an account"
-            : "Already have an account? Log in"}
-        </button>
+        {!draftHabit && (
+          <button
+            className="ember-auth-toggle"
+            onClick={() => {
+              setMode(mode === "login" ? "signup" : "login");
+              setError(null);
+            }}
+          >
+            {mode === "login"
+              ? "New here? Create an account"
+              : "Already have an account? Log in"}
+          </button>
+        )}
       </div>
     </div>
   );

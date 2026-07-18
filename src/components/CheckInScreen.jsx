@@ -46,7 +46,10 @@ function emberStyle(streak) {
 }
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  const istOffsetMs = 5.5 * 60 * 60 * 1000;
+  const now = new Date();
+  const istNow = new Date(now.getTime() + istOffsetMs);
+  return istNow.toISOString().slice(0, 10);
 }
 
 export default function CheckInScreen({ userId }) {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabaseClient"; // adjust path if your structure differs
+import FirstHabitStep from "./components/FirstHabitStep";
 import AuthScreen from "./components/AuthScreen";
 import CheckInScreen from "./components/CheckInScreen";
 import "./App.css";
@@ -8,25 +9,25 @@ import { initPush, registerPushUser } from "./lib/pushNotifications";
 /**
  * EMBER — Root app shell
  * -------------------------------------------------------------
- * Owns the single source of truth for auth session state and
- * routes between AuthScreen and CheckInScreen accordingly.
+ * Routing, in order, for a signed-out visitor:
+ *   1. FirstHabitStep — pick a habit, nothing saved yet (draftHabit)
+ *   2. AuthScreen — shown with draftHabit attached; "Continue" not
+ *      "Sign up", since the account is finishing something already
+ *      started (IKEA/Endowment effect)
+ *   3. On successful signup, the draft habit is created for real
+ *      via createDraftHabit(), then draftHabit is cleared
  *
- * - On mount: checks for an existing session (so refreshing the
- *   page doesn't log the user out), and initializes OneSignal.
- * - Subscribes to onAuthStateChange so login/logout/token-refresh
- *   anywhere in the app keeps this state in sync automatically.
- * - Once a session exists, registers this device with OneSignal
- *   under the user's Supabase id (registerPushUser handles both
- *   the permission prompt and OneSignal.login internally).
- * - Cleans up the subscription on unmount to avoid leaks.
+ * A returning user (existing session) skips straight to
+ * CheckInScreen — FirstHabitStep only ever applies to first-time
+ * visitors with no session and no draft in progress.
  * -------------------------------------------------------------
  */
 
 export default function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [draftHabit, setDraftHabit] = useState(null);
 
-  // Runs once on mount: check for an existing session + init OneSignal
   useEffect(() => {
     initPush();
 
@@ -35,8 +36,6 @@ export default function App() {
       setLoading(false);
     });
 
-    // Keep session state in sync with any auth change,
-    // anywhere in the app (login, logout, token refresh)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -46,17 +45,31 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Runs whenever session changes: register this device with OneSignal
-  // once we have a real logged-in user
   useEffect(() => {
     if (session?.user?.id) {
       registerPushUser(session.user.id);
     }
   }, [session]);
 
+  // Once signup succeeds, if a draft habit was in progress, create
+  // it for real now — this is the moment "building" becomes "saved".
+  async function handleAuthSuccess(newSession) {
+    setSession(newSession);
+
+    if (draftHabit && newSession?.user?.id) {
+      await supabase.from("habits").insert({
+        user_id: newSession.user.id,
+        name: draftHabit.name,
+        icon: draftHabit.icon,
+        frequency: draftHabit.frequency,
+        is_active: true,
+      });
+      setDraftHabit(null);
+    }
+  }
+
   async function handleLogout() {
     await supabase.auth.signOut();
-    // onAuthStateChange fires automatically and clears session state
   }
 
   if (loading) {
@@ -68,7 +81,12 @@ export default function App() {
   }
 
   if (!session) {
-    return <AuthScreen onAuthSuccess={setSession} />;
+    if (!draftHabit) {
+      return <FirstHabitStep onContinue={setDraftHabit} />;
+    }
+    return (
+      <AuthScreen onAuthSuccess={handleAuthSuccess} draftHabit={draftHabit} />
+    );
   }
 
   return (

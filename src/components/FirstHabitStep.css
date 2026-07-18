@@ -1,11 +1,10 @@
-.ember-auth-screen {
+.ember-firsthabit-screen {
   --charcoal: #1c1917;
   --panel: #292420;
   --ash: #57534e;
   --parchment: #e7dfd3;
   --ember: #ea580c;
   --ember-bright: #f5a623;
-  --error: #dc2626;
 
   min-height: 100vh;
   background: var(--charcoal);
@@ -17,12 +16,12 @@
   padding: 24px;
 }
 
-.ember-auth-card {
+.ember-firsthabit-card {
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
 }
 
-.ember-auth-eyebrow {
+.ember-firsthabit-eyebrow {
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -30,37 +29,32 @@
   margin: 0 0 12px;
 }
 
-.ember-auth-title {
+.ember-firsthabit-title {
   font-family: "Fraunces", Georgia, serif;
   font-weight: 500;
   font-style: italic;
-  font-size: 30px;
-  line-height: 1.2;
-  margin: 0 0 28px;
+  font-size: 26px;
+  line-height: 1.25;
+  margin: 0 0 8px;
   color: var(--parchment);
 }
 
-.ember-auth-copy {
+.ember-firsthabit-copy {
   font-size: 14px;
   color: var(--ash);
-  line-height: 1.6;
+  margin: 0 0 28px;
 }
 
-.ember-auth-copy strong {
-  color: var(--parchment);
-  font-weight: 500;
-}
-
-.ember-auth-form {
+.ember-firsthabit-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .ember-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .ember-field label {
@@ -68,7 +62,8 @@
   color: var(--ash);
 }
 
-.ember-field input {
+.ember-field input,
+.ember-field select {
   background: var(--panel);
   border: 1px solid rgba(231, 223, 211, 0.1);
   border-radius: 8px;
@@ -80,15 +75,33 @@
   transition: border-color 0.15s ease;
 }
 
-.ember-field input::placeholder {
-  color: var(--ash);
-}
-
-.ember-field input:focus {
+.ember-field input:focus,
+.ember-field select:focus {
   border-color: var(--ember);
 }
 
-.ember-auth-error {
+.ember-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.ember-icon-option {
+  background: var(--panel);
+  border: 1px solid rgba(231, 223, 211, 0.1);
+  border-radius: 8px;
+  font-size: 20px;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.ember-icon-option.is-selected {
+  border-color: var(--ember);
+  background: rgba(234, 88, 12, 0.12);
+}
+
+.ember-firsthabit-error {
   font-size: 13px;
   color: #fca5a5;
   background: rgba(220, 38, 38, 0.1);
@@ -98,7 +111,7 @@
   margin: 0;
 }
 
-.ember-auth-submit {
+.ember-firsthabit-submit {
   background: var(--ember);
   color: var(--charcoal);
   border: none;
@@ -107,66 +120,13 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 4px;
   transition: background 0.15s ease, transform 0.1s ease;
 }
 
-.ember-auth-submit:hover:not(:disabled) {
+.ember-firsthabit-submit:hover {
   background: var(--ember-bright);
 }
 
-.ember-auth-submit:active:not(:disabled) {
+.ember-firsthabit-submit:active {
   transform: scale(0.98);
-}
-
-.ember-auth-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.ember-auth-toggle,
-.ember-auth-link-btn {
-  display: block;
-  width: 100%;
-  background: none;
-  border: none;
-  color: var(--ash);
-  font-size: 13px;
-  text-align: center;
-  margin-top: 20px;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.ember-auth-toggle:hover,
-.ember-auth-link-btn:hover {
-  color: var(--parchment);
-}
-
-@media (max-width: 400px) {
-  .ember-auth-title {
-    font-size: 26px;
-  }
-}
-
-.ember-auth-draft {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--panel);
-  border: 1px solid rgba(234, 88, 12, 0.25);
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-bottom: 24px;
-}
-
-.ember-auth-draft-icon {
-  font-size: 18px;
-}
-
-.ember-auth-draft-name {
-  font-size: 14px;
-  color: var(--parchment);
-  font-weight: 500;
 }

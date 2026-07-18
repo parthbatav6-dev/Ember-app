@@ -17,7 +17,7 @@ import "./AddHabitModal.css";
  * -------------------------------------------------------------
  */
 
-const ICONS = ["💧", "📖", "🏋️", "🧘", "🍬", "🚭", "☀️", "✍️"];
+const ICONS = ["✍️", "🧘", "💧", "📖", "🏋️", "🍬", "🚭", "☀️"];
 const FREQUENCIES = [
   { value: "daily", label: "Every day" },
   { value: "weekly", label: "Once a week" },

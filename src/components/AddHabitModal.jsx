@@ -191,6 +191,6 @@ export default function AddHabitModal({ userId, onClose, onCreated }) {
 
 function mapHabitError(message) {
   if (message.includes("Free tier limit reached"))
-    return "You've hit the free plan's 5-habit limit. Upgrade to add more.";
+    return "You've got 5 habits going strong — upgrade to add more.";
   return "Couldn't create that habit. Try again.";
 }

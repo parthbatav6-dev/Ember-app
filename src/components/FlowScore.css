@@ -1,0 +1,52 @@
+.ember-flowscore {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #292420;
+  border: 1px solid rgba(231, 223, 211, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.ember-flowscore-loading {
+  height: 88px;
+}
+
+.ember-flowscore-glow {
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: flowpulse 3s ease-in-out infinite;
+}
+
+@keyframes flowpulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+.ember-flowscore-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ember-flowscore-number {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 32px;
+  font-weight: 600;
+  color: #e7dfd3;
+  line-height: 1;
+}
+
+.ember-flowscore-label {
+  font-family: "Fraunces", Georgia, serif;
+  font-style: italic;
+  font-size: 15px;
+  color: #57534e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ember-flowscore-glow {
+    animation: none;
+  }
+}

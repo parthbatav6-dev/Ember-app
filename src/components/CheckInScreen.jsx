@@ -5,6 +5,7 @@ import EditHabitModal from "./EditHabitModal";
 import HabitHeatmap from "./HabitHeatmap";
 import WeeklyStats from "./WeeklyStats";
 import WeekBar from "./WeekBar";
+import FlowScore from "./FlowScore";
 import "./CheckInScreen.css";
 
 /**
@@ -176,6 +177,7 @@ setLast7Checkins(weekCheckins || []);
           {doneCount} of {habits.length} done
         </p>
       </header>
+      <FlowScore userId={userId} />
       <WeeklyStats habits={habits} last7DaysCheckins={last7Checkins} />
 
       {error && <div className="ember-error">{error}</div>}

@@ -6,6 +6,7 @@ import HabitHeatmap from "./HabitHeatmap";
 import WeeklyStats from "./WeeklyStats";
 import WeekBar from "./WeekBar";
 import FlowScore from "./FlowScore";
+import CollectiveImpact from "./CollectiveImpact";
 import "./CheckInScreen.css";
 
 /**
@@ -143,11 +144,15 @@ setLast7Checkins(weekCheckins || []);
       )
     );
 
-    const { error: insertErr } = await supabase.from("habit_checkins").insert({
-      habit_id: habit.id,
-      user_id: userId,
-      checkin_date: todayISO(),
-    });
+   const { data: insertedCheckin, error: insertErr } = await supabase
+      .from("habit_checkins")
+      .insert({
+        habit_id: habit.id,
+        user_id: userId,
+        checkin_date: todayISO(),
+      })
+      .select()
+      .single();
 
     if (insertErr) {
       // Roll back optimistic update on failure
@@ -161,6 +166,12 @@ setLast7Checkins(weekCheckins || []);
       setError("Couldn't save that check-in. Try again.");
       return;
     }
+await supabase.rpc("award_tokens", {
+      p_user_id: userId,
+      p_signal_id: insertedCheckin.id,
+      p_token_type: "checkin",
+      p_occurred_at: new Date().toISOString(),
+    });
 
     // Re-sync with DB-computed streak (trigger already updated it server-side)
     fetchHabits();
@@ -182,6 +193,7 @@ setLast7Checkins(weekCheckins || []);
       </header>
       <FlowScore userId={userId} />
       <WeeklyStats habits={habits} last7DaysCheckins={last7Checkins} />
+      <CollectiveImpact />
 
       {error && <div className="ember-error">{error}</div>}
 

@@ -7,6 +7,7 @@ import WeeklyStats from "./WeeklyStats";
 import WeekBar from "./WeekBar";
 import FlowScore from "./FlowScore";
 import CollectiveImpact from "./CollectiveImpact";
+import StreakRiskBanner from "./StreakRiskBanner";
 import "./CheckInScreen.css";
 
 /**
@@ -221,9 +222,23 @@ if (tokenErr) console.error("award_tokens failed:", tokenErr);
         </div>
       )}
 
+      {habits
+        .filter((h) => !h.checkedInToday && h.current_streak > 0)
+        .map((h) => (
+          <StreakRiskBanner
+            key={h.id}
+            habit={h}
+            userId={userId}
+            onDismiss={() => document.getElementById(`habit-${h.id}`)?.scrollIntoView({ behavior: "smooth" })}
+          />
+        ))}
+
       <ul className="ember-list">
         {habits.map((habit) => (
+          <ul className="ember-list">
+        {habits.map((habit) => (
           <li key={habit.id} className={`ember-row ${habit.checkedInToday ? "is-done" : ""}`}>
+            <li key={habit.id} id={`habit-${habit.id}`} className={`ember-row ${habit.checkedInToday ? "is-done" : ""}`}></li>
             <button
               className="ember-checkbox"
               onClick={() => toggleCheckIn(habit)}

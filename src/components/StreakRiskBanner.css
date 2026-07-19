@@ -1,0 +1,58 @@
+.ember-risk-banner {
+  background: #1C1917;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 12px 0;
+  text-align: center;
+}
+.ember-risk-eyebrow {
+  color: #F5A623;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px;
+}
+.ember-risk-title {
+  color: #E7DFD3;
+  font-size: 17px;
+  font-weight: 500;
+  margin: 0 0 6px;
+}
+.ember-risk-body {
+  color: #57534E;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+.ember-risk-card {
+  background: #292420;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+.ember-risk-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #E7DFD3;
+  margin-bottom: 8px;
+}
+.ember-risk-row:last-child { margin-bottom: 0; }
+.ember-risk-danger { color: #E24B4A; font-weight: 500; }
+.ember-risk-amber { color: #F5A623; }
+.ember-risk-cta {
+  width: 100%;
+  background: #EA580C;
+  color: #1C1917;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.ember-risk-safe {
+  color: #57534E;
+  font-size: 11px;
+  margin: 0;
+}

@@ -235,10 +235,7 @@ if (tokenErr) console.error("award_tokens failed:", tokenErr);
 
       <ul className="ember-list">
         {habits.map((habit) => (
-          <ul className="ember-list">
-        {habits.map((habit) => (
-          <li key={habit.id} className={`ember-row ${habit.checkedInToday ? "is-done" : ""}`}>
-            <li key={habit.id} id={`habit-${habit.id}`} className={`ember-row ${habit.checkedInToday ? "is-done" : ""}`}></li>
+          <li key={habit.id} id={`habit-${habit.id}`} className={`ember-row ${habit.checkedInToday ? "is-done" : ""}`}>
             <button
               className="ember-checkbox"
               onClick={() => toggleCheckIn(habit)}

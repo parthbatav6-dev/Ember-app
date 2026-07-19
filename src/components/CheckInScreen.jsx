@@ -8,6 +8,7 @@ import WeekBar from "./WeekBar";
 import FlowScore from "./FlowScore";
 import CollectiveImpact from "./CollectiveImpact";
 import StreakRiskBanner from "./StreakRiskBanner";
+import TodayImpactBand from "./TodayImpactBand";
 import "./CheckInScreen.css";
 
 /**
@@ -202,6 +203,7 @@ if (tokenErr) console.error("award_tokens failed:", tokenErr);
       </header>
       <FlowScore userId={userId} />
       <WeeklyStats habits={habits} last7DaysCheckins={last7Checkins} />
+      <TodayImpactBand userId={userId} />
       <CollectiveImpact />
 
       {error && <div className="ember-error">{error}</div>}

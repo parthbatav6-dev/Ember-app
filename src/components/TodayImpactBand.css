@@ -1,0 +1,23 @@
+.ember-today-band {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  border-top: 0.5px solid #57534E;
+  border-bottom: 0.5px solid #57534E;
+}
+.ember-today-label {
+  color: #57534E;
+  font-size: 12px;
+}
+.ember-today-arrow {
+  color: #EA580C;
+  font-size: 12px;
+}
+.ember-today-value {
+  color: #F5A623;
+  font-size: 12px;
+  font-weight: 500;
+}

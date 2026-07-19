@@ -3,16 +3,43 @@
   border-radius: 12px;
   padding: 12px 16px;
   margin: 12px 0;
-  text-align: center;
 }
 .ember-impact-label {
   color: #57534E;
   font-size: 12px;
+  margin: 0 0 12px;
+  text-align: center;
+}
+.ember-impact-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ember-impact-tier-value {
+  color: #F5A623;
+  font-size: 16px;
+  font-weight: 500;
   margin: 0;
 }
-.ember-impact-value {
-  color: #F5A623;
-  font-size: 20px;
-  font-weight: 500;
+.ember-impact-tier-label {
+  color: #57534E;
+  font-size: 12px;
+  font-weight: 400;
+}
+.ember-impact-bar-track {
+  height: 6px;
+  background: #1C1917;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.ember-impact-bar-fill {
+  height: 100%;
+  background: #EA580C;
+  border-radius: 3px;
+}
+.ember-impact-progress-text {
+  color: #57534E;
+  font-size: 11px;
   margin: 4px 0 0;
 }

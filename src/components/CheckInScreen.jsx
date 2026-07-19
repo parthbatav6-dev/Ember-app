@@ -10,6 +10,7 @@ import CollectiveImpact from "./CollectiveImpact";
 import StreakRiskBanner from "./StreakRiskBanner";
 import TodayImpactBand from "./TodayImpactBand";
 import { CHECKIN_MESSAGES, STREAK_7_MESSAGES, STREAK_30_MESSAGES, getRandomMessage } from "./celebrationMessages";
+import ImpactExplainer from "./ImpactExplainer";
 import "./CheckInScreen.css";
 
 /**
@@ -65,7 +66,8 @@ export default function CheckInScreen({ userId }) {
   const [editingHabit, setEditingHabit] = useState(null);
   const [notifStatus, setNotifStatus] = useState("unknown");
   const [last7Checkins, setLast7Checkins] = useState([]); 
-  const [celebration, setCelebration] = useState(null);// unknown | default | granted | denied
+  const [celebration, setCelebration] = useState(null);
+  const [showExplainer, setShowExplainer] = useState(false);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -84,6 +86,11 @@ export default function CheckInScreen({ userId }) {
   useEffect(() => {
     if (userId) fetchHabits();
   }, [userId]);
+  useEffect(() => {
+  if (userId && !localStorage.getItem(`ember_explainer_seen_${userId}`)) {
+    setShowExplainer(true);
+  }
+}, [userId]);
 
   async function fetchHabits() {
     setLoading(true);
@@ -344,6 +351,14 @@ setTimeout(() => setCelebration(null), 4000);
           }}
         />
       )}
+      {showExplainer && (
+  <ImpactExplainer
+    onClose={() => {
+      localStorage.setItem(`ember_explainer_seen_${userId}`, "true");
+      setShowExplainer(false);
+    }}
+  />
+)}
     </div>
   );
 }

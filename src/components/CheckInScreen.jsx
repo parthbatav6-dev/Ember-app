@@ -9,6 +9,7 @@ import FlowScore from "./FlowScore";
 import CollectiveImpact from "./CollectiveImpact";
 import StreakRiskBanner from "./StreakRiskBanner";
 import TodayImpactBand from "./TodayImpactBand";
+import { CHECKIN_MESSAGES, STREAK_7_MESSAGES, STREAK_30_MESSAGES, getRandomMessage } from "./celebrationMessages";
 import "./CheckInScreen.css";
 
 /**
@@ -63,7 +64,8 @@ export default function CheckInScreen({ userId }) {
   const [heatmapHabit, setHeatmapHabit] = useState(null);
   const [editingHabit, setEditingHabit] = useState(null);
   const [notifStatus, setNotifStatus] = useState("unknown");
-  const [last7Checkins, setLast7Checkins] = useState([]); // unknown | default | granted | denied
+  const [last7Checkins, setLast7Checkins] = useState([]); 
+  const [celebration, setCelebration] = useState(null);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -182,6 +184,8 @@ const { error: tokenErr } = await supabase.rpc("award_tokens", {
   p_occurred_at: new Date().toISOString(),
 });
 if (tokenErr) console.error("award_tokens failed:", tokenErr);
+setCelebration(getRandomMessage(CHECKIN_MESSAGES));
+setTimeout(() => setCelebration(null), 4000);
 
     // Re-sync with DB-computed streak (trigger already updated it server-side)
     fetchHabits();
@@ -207,6 +211,11 @@ if (tokenErr) console.error("award_tokens failed:", tokenErr);
       <CollectiveImpact />
 
       {error && <div className="ember-error">{error}</div>}
+      {celebration && (
+  <div className="ember-celebration">
+    {celebration}
+  </div>
+)}
 
       {notifStatus === "default" && (
         <div className="ember-notif-banner">

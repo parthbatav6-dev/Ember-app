@@ -279,3 +279,19 @@
     animation: none;
   }
 }
+.ember-celebration {
+  background: #292420;
+  border-left: 3px solid #EA580C;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 8px 0;
+  color: #E7DFD3;
+  font-size: 13px;
+  font-style: italic;
+  font-family: var(--font-voice, serif);
+  animation: fadeIn 0.3s ease-in;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -130,3 +130,10 @@
 .ember-firsthabit-submit:active {
   transform: scale(0.98);
 }
+.ember-firsthabit-subtitle {
+  color: #E7DFD3;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 8px 0 16px;
+  opacity: 0.85;
+}

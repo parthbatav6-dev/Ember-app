@@ -40,12 +40,15 @@ export default function FirstHabitStep({ onContinue }) {
   return (
     <div className="ember-firsthabit-screen">
       <div className="ember-firsthabit-card">
-        <p className="ember-firsthabit-eyebrow">Ember</p>
+       <p className="ember-firsthabit-eyebrow">Ember</p>
         <h1 className="ember-firsthabit-title">
-          What's the first thing you want to hold yourself to?
+          Your discipline can feed someone.
         </h1>
+        <p className="ember-firsthabit-subtitle">
+          Every habit you keep here earns real help — meals, clothing, or support for a child in need. Not points. Real impact.
+        </p>
         <p className="ember-firsthabit-copy">
-          Pick one. You can add more once you're in.
+          Start with one thing you want to hold yourself to.
         </p>
 
         <form onSubmit={handleSubmit} className="ember-firsthabit-form">

@@ -166,12 +166,20 @@ setLast7Checkins(weekCheckins || []);
       setError("Couldn't save that check-in. Try again.");
       return;
     }
-await supabase.rpc("award_tokens", {
-      p_user_id: userId,
-      p_signal_id: insertedCheckin.id,
-      p_token_type: "checkin",
-      p_occurred_at: new Date().toISOString(),
-    });
+const { data: signalRow } = await supabase
+  .from("signals")
+  .select("id")
+  .eq("habit_id", habit.id)
+  .eq("occurred_at", insertedCheckin.created_at)
+  .single();
+
+const { error: tokenErr } = await supabase.rpc("award_tokens", {
+  p_user_id: userId,
+  p_signal_id: signalRow?.id,
+  p_token_type: "checkin",
+  p_occurred_at: new Date().toISOString(),
+});
+if (tokenErr) console.error("award_tokens failed:", tokenErr);
 
     // Re-sync with DB-computed streak (trigger already updated it server-side)
     fetchHabits();

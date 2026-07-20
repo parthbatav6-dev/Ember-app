@@ -10,11 +10,12 @@ export default function ImpactCertificate({ userId, tier, username, onClose }) {
   }, [userId]);
 
   async function fetchSummary() {
-    const { data } = await supabase
-      .rpc("get_impact_summary", { p_user_id: userId })
-      .single();
-    setSummary(data);
-  }
+  const { data, error } = await supabase
+    .rpc("get_impact_summary", { p_user_id: userId })
+    .single();
+  if (error) console.error("get_impact_summary failed:", error);
+  setSummary(data);
+}
 
   const isLocked = tier !== "paid";
 

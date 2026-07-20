@@ -71,7 +71,8 @@ export default function CheckInScreen({ userId }) {
   const [celebration, setCelebration] = useState(null);
   const [showExplainer, setShowExplainer] = useState(false);
   const [showNorthStar, setShowNorthStar] = useState(false);
-  const [northStar, setNorthStar] = useState(null);// unknown | default | granted | denied
+  const [northStar, setNorthStar] = useState(null);
+  const [userTier, setUserTier] = useState("free");// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -157,10 +158,11 @@ setLast7Checkins(weekCheckins || []);
   async function fetchNorthStar() {
   const { data } = await supabase
     .from("profiles")
-    .select("north_star")
+    .select("north_star, tier")
     .eq("id", userId)
     .single();
   setNorthStar(data?.north_star || null);
+  setUserTier(data?.tier || "free");
 }
 
   async function toggleCheckIn(habit) {
@@ -241,7 +243,7 @@ setTimeout(() => setCelebration(null), 4000);
       <PillarScores userId={userId} />
       <WeeklyStats habits={habits} last7DaysCheckins={last7Checkins} />
       <TodayImpactBand userId={userId} />
-      <CollectiveImpact />
+      <CollectiveImpact tier={userTier} />
 
       {error && <div className="ember-error">{error}</div>}
       {celebration && (

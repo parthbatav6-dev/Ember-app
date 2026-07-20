@@ -43,3 +43,6 @@
   font-size: 11px;
   margin: 4px 0 0;
 }
+.ember-impact-tier.is-locked {
+  opacity: 0.5;
+}

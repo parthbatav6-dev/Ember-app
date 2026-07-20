@@ -13,6 +13,7 @@ import { CHECKIN_MESSAGES, STREAK_7_MESSAGES, STREAK_30_MESSAGES, getRandomMessa
 import ImpactExplainer from "./ImpactExplainer";
 import NorthStar from "./NorthStar";
 import PillarScores from "./PillarScores";
+import ImpactCertificate from "./ImpactCertificate";
 import "./CheckInScreen.css";
 
 /**
@@ -72,7 +73,9 @@ export default function CheckInScreen({ userId }) {
   const [showExplainer, setShowExplainer] = useState(false);
   const [showNorthStar, setShowNorthStar] = useState(false);
   const [northStar, setNorthStar] = useState(null);
-  const [userTier, setUserTier] = useState("free");// unknown | default | granted | denied
+  const [userTier, setUserTier] = useState("free");
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [username, setUsername] = useState("");// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -158,11 +161,12 @@ setLast7Checkins(weekCheckins || []);
   async function fetchNorthStar() {
   const { data } = await supabase
     .from("profiles")
-    .select("north_star, tier")
+    .select("north_star, tier, username")
     .eq("id", userId)
     .single();
   setNorthStar(data?.north_star || null);
   setUserTier(data?.tier || "free");
+  setUsername(data?.username || "");
 }
 
   async function toggleCheckIn(habit) {
@@ -244,6 +248,9 @@ setTimeout(() => setCelebration(null), 4000);
       <WeeklyStats habits={habits} last7DaysCheckins={last7Checkins} />
       <TodayImpactBand userId={userId} />
       <CollectiveImpact tier={userTier} />
+      <button className="ember-cert-trigger" onClick={() => setShowCertificate(true)}>
+  🏆 View my impact certificate
+</button>
 
       {error && <div className="ember-error">{error}</div>}
       {celebration && (
@@ -397,6 +404,14 @@ setTimeout(() => setCelebration(null), 4000);
       setShowNorthStar(false);
       fetchNorthStar();
     }}
+  />
+)}
+{showCertificate && (
+  <ImpactCertificate
+    userId={userId}
+    tier={userTier}
+    username={username}
+    onClose={() => setShowCertificate(false)}
   />
 )}
     </div>

@@ -313,3 +313,13 @@
   font-weight: 600;
   font-style: normal;
 }
+.ember-cert-trigger {
+  width: 100%;
+  background: #292420;
+  border: 1px solid #57534E;
+  border-radius: 10px;
+  padding: 10px;
+  color: #F5A623;
+  font-size: 13px;
+  margin: 8px 0;
+}

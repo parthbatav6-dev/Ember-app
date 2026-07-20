@@ -1,0 +1,30 @@
+.ember-analytics-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 16px;
+}
+.ember-analytics-card {
+  background: #1C1917;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.ember-analytics-locked-icon { font-size: 32px; text-align: center; margin: 20px 0 10px; }
+.ember-analytics-locked-text { color: #E7DFD3; text-align: center; font-size: 14px; }
+.ember-analytics-eyebrow { color: #F5A623; font-size: 12px; letter-spacing: 0.05em; margin: 0 0 6px; }
+.ember-analytics-title { color: #E7DFD3; font-size: 20px; font-family: var(--font-voice, serif); font-style: italic; margin: 0 0 20px; }
+.ember-analytics-section { margin-bottom: 20px; }
+.ember-analytics-label { color: #57534E; font-size: 12px; margin: 0 0 8px; }
+.ember-analytics-trend { display: flex; align-items: flex-end; gap: 6px; height: 60px; }
+.ember-analytics-bar { flex: 1; background: #EA580C; border-radius: 3px 3px 0 0; min-height: 2px; }
+.ember-analytics-row { display: flex; justify-content: space-between; color: #E7DFD3; font-size: 13px; padding: 6px 0; }
+.ember-analytics-value { color: #E7DFD3; font-size: 14px; }
+.ember-analytics-close { width: 100%; background: none; border: none; color: #57534E; font-size: 13px; padding: 10px; }

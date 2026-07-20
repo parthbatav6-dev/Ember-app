@@ -69,7 +69,8 @@ export default function CheckInScreen({ userId }) {
   const [last7Checkins, setLast7Checkins] = useState([]); 
   const [celebration, setCelebration] = useState(null);
   const [showExplainer, setShowExplainer] = useState(false);
-  const [showNorthStar, setShowNorthStar] = useState(false);// unknown | default | granted | denied
+  const [showNorthStar, setShowNorthStar] = useState(false);
+  const [northStar, setNorthStar] = useState(null);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -86,8 +87,11 @@ export default function CheckInScreen({ userId }) {
   }
 
   useEffect(() => {
-    if (userId) fetchHabits();
-  }, [userId]);
+  if (userId) {
+    fetchHabits();
+    fetchNorthStar();
+  }
+}, [userId]);
   useEffect(() => {
   if (userId && !localStorage.getItem(`ember_explainer_seen_${userId}`)) {
     setShowExplainer(true);
@@ -149,6 +153,14 @@ setLast7Checkins(weekCheckins || []);
     );
     setLoading(false);
   }
+  async function fetchNorthStar() {
+  const { data } = await supabase
+    .from("profiles")
+    .select("north_star")
+    .eq("id", userId)
+    .single();
+  setNorthStar(data?.north_star || null);
+}
 
   async function toggleCheckIn(habit) {
     if (habit.checkedInToday) return; // MVP: no un-checking, keep it simple + honest
@@ -215,6 +227,11 @@ setTimeout(() => setCelebration(null), 4000);
       <header className="ember-header">
         <p className="ember-eyebrow">Today</p>
         <h1 className="ember-title">Keep the fire lit.</h1>
+        {northStar && (
+  <button className="ember-northstar-display" onClick={() => setShowNorthStar(true)}>
+    Becoming: {northStar} <span className="ember-northstar-edit-hint">✎</span>
+  </button>
+)}
         <p className="ember-subcount">
           {doneCount} of {habits.length} done
         </p>
@@ -369,9 +386,11 @@ setTimeout(() => setCelebration(null), 4000);
 {showNorthStar && (
   <NorthStar
     userId={userId}
+    currentValue={northStar}
     onClose={() => {
       localStorage.setItem(`ember_northstar_seen_${userId}`, "true");
       setShowNorthStar(false);
+      fetchNorthStar();
     }}
   />
 )}

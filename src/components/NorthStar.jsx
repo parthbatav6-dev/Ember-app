@@ -10,8 +10,8 @@ const IDENTITY_PROMPTS = [
   "Someone who finishes what they start",
 ];
 
-export default function NorthStar({ userId, onClose }) {
-  const [identity, setIdentity] = useState("");
+export default function NorthStar({ userId, currentValue, onClose }) {
+  const [identity, setIdentity] = useState(currentValue || "");
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {

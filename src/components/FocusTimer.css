@@ -1,0 +1,99 @@
+.ember-timer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #1C1917;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 70;
+  padding: 16px;
+}
+.ember-timer-card {
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+}
+.ember-timer-eyebrow {
+  color: #F5A623;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  margin: 0 0 10px;
+}
+.ember-timer-title {
+  color: #E7DFD3;
+  font-size: 22px;
+  font-family: var(--font-voice, serif);
+  font-style: italic;
+  margin: 0 0 20px;
+}
+.ember-timer-durations {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.ember-timer-duration-btn {
+  background: #292420;
+  border: 1px solid #57534E;
+  border-radius: 10px;
+  padding: 12px 20px;
+  color: #E7DFD3;
+  font-size: 14px;
+}
+.ember-timer-duration-btn.is-selected {
+  background: #EA580C;
+  border-color: #EA580C;
+  color: #1C1917;
+}
+.ember-timer-habit-select {
+  width: 100%;
+  background: #292420;
+  border: 1px solid #57534E;
+  border-radius: 10px;
+  padding: 10px;
+  color: #E7DFD3;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.ember-timer-warning {
+  color: #57534E;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+.ember-timer-start {
+  width: 100%;
+  background: #EA580C;
+  color: #1C1917;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.ember-timer-cancel {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #57534E;
+  font-size: 13px;
+  padding: 6px;
+}
+.ember-timer-clock {
+  color: #E7DFD3;
+  font-family: var(--font-mono, monospace);
+  font-size: 64px;
+  margin: 20px 0;
+}
+.ember-timer-hint {
+  color: #57534E;
+  font-size: 13px;
+}
+.ember-timer-body {
+  color: #E7DFD3;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 24px;
+  opacity: 0.85;
+}

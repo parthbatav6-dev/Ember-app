@@ -14,6 +14,7 @@ import ImpactExplainer from "./ImpactExplainer";
 import NorthStar from "./NorthStar";
 import PillarScores from "./PillarScores";
 import ImpactCertificate from "./ImpactCertificate";
+import FocusTimer from "./FocusTimer";
 import "./CheckInScreen.css";
 
 /**
@@ -75,7 +76,8 @@ export default function CheckInScreen({ userId }) {
   const [northStar, setNorthStar] = useState(null);
   const [userTier, setUserTier] = useState("free");
   const [showCertificate, setShowCertificate] = useState(false);
-  const [username, setUsername] = useState("");// unknown | default | granted | denied
+  const [username, setUsername] = useState("");
+  const [showTimer, setShowTimer] = useState(false);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -251,6 +253,9 @@ setTimeout(() => setCelebration(null), 4000);
       <button className="ember-cert-trigger" onClick={() => setShowCertificate(true)}>
   🏆 View my impact certificate
 </button>
+<button className="ember-timer-trigger" onClick={() => setShowTimer(true)}>
+  ⏱ Start Deep Work
+</button>
 
       {error && <div className="ember-error">{error}</div>}
       {celebration && (
@@ -413,6 +418,9 @@ setTimeout(() => setCelebration(null), 4000);
     username={username}
     onClose={() => setShowCertificate(false)}
   />
+)}
+{showTimer && (
+  <FocusTimer userId={userId} habits={habits} onClose={() => setShowTimer(false)} />
 )}
     </div>
   );

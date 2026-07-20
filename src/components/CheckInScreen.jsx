@@ -12,6 +12,7 @@ import TodayImpactBand from "./TodayImpactBand";
 import { CHECKIN_MESSAGES, STREAK_7_MESSAGES, STREAK_30_MESSAGES, getRandomMessage } from "./celebrationMessages";
 import ImpactExplainer from "./ImpactExplainer";
 import NorthStar from "./NorthStar";
+import PillarScores from "./PillarScores";
 import "./CheckInScreen.css";
 
 /**
@@ -237,6 +238,7 @@ setTimeout(() => setCelebration(null), 4000);
         </p>
       </header>
       <FlowScore userId={userId} />
+      <PillarScores userId={userId} />
       <WeeklyStats habits={habits} last7DaysCheckins={last7Checkins} />
       <TodayImpactBand userId={userId} />
       <CollectiveImpact />

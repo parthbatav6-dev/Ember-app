@@ -41,6 +41,7 @@ export default function AddHabitModal({ userId, onClose, onCreated }) {
   const [reminderTime, setReminderTime] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [pillar, setPillar] = useState("mind");
 
   function toggleDay(day) {
     setCustomDays((prev) =>
@@ -70,6 +71,7 @@ export default function AddHabitModal({ userId, onClose, onCreated }) {
         name: name.trim(),
         icon,
         frequency,
+        pillar,
         custom_days: frequency === "custom" ? customDays : null,
         reminder_time: reminderTime || null,
         is_active: true,
@@ -167,6 +169,14 @@ export default function AddHabitModal({ userId, onClose, onCreated }) {
               </div>
             </div>
           )}
+          <div className="ember-field">
+  <label>Pillar</label>
+  <div className="ember-pillar-options">
+    <button type="button" className={`ember-pillar-btn ${pillar === "body" ? "is-selected" : ""}`} onClick={() => setPillar("body")}>Body</button>
+    <button type="button" className={`ember-pillar-btn ${pillar === "mind" ? "is-selected" : ""}`} onClick={() => setPillar("mind")}>Mind</button>
+    <button type="button" className={`ember-pillar-btn ${pillar === "character" ? "is-selected" : ""}`} onClick={() => setPillar("character")}>Character</button>
+  </div>
+</div>
 
           <div className="ember-field">
             <label htmlFor="reminderTime">Reminder (optional)</label>

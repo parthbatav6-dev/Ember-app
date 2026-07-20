@@ -181,3 +181,21 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+.ember-pillar-options {
+  display: flex;
+  gap: 8px;
+}
+.ember-pillar-btn {
+  flex: 1;
+  background: #292420;
+  border: 1px solid #57534E;
+  border-radius: 8px;
+  padding: 8px;
+  color: #E7DFD3;
+  font-size: 13px;
+}
+.ember-pillar-btn.is-selected {
+  background: #EA580C;
+  color: #1C1917;
+  border-color: #EA580C;
+}

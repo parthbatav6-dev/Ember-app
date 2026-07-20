@@ -1,0 +1,22 @@
+.ember-pillars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0;
+}
+.ember-pillar-bar-track {
+  height: 6px;
+  background: #292420;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.ember-pillar-bar-fill {
+  height: 100%;
+  background: #EA580C;
+  border-radius: 3px;
+}
+.ember-pillar-label {
+  color: #E7DFD3;
+  font-size: 12px;
+  margin: 4px 0 0;
+}

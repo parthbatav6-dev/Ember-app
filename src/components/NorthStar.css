@@ -1,0 +1,83 @@
+.ember-northstar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 16px;
+}
+.ember-northstar-card {
+  background: #1C1917;
+  border-radius: 16px;
+  padding: 26px;
+  max-width: 400px;
+  width: 100%;
+}
+.ember-northstar-eyebrow {
+  color: #F5A623;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px;
+}
+.ember-northstar-title {
+  color: #E7DFD3;
+  font-size: 22px;
+  font-family: var(--font-voice, serif);
+  font-style: italic;
+  margin: 0 0 12px;
+}
+.ember-northstar-body {
+  color: #E7DFD3;
+  font-size: 14px;
+  line-height: 1.6;
+  opacity: 0.8;
+  margin: 0 0 18px;
+}
+.ember-northstar-input {
+  width: 100%;
+  background: #292420;
+  border: 1px solid #57534E;
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #E7DFD3;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.ember-northstar-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.ember-northstar-chip {
+  background: #292420;
+  border: 1px solid #57534E;
+  border-radius: 20px;
+  padding: 6px 12px;
+  color: #E7DFD3;
+  font-size: 12px;
+}
+.ember-northstar-save {
+  width: 100%;
+  background: #EA580C;
+  color: #1C1917;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.ember-northstar-save:disabled {
+  opacity: 0.5;
+}
+.ember-northstar-skip {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #57534E;
+  font-size: 13px;
+  padding: 6px;
+}

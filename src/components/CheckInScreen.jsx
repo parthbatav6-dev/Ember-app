@@ -11,6 +11,7 @@ import StreakRiskBanner from "./StreakRiskBanner";
 import TodayImpactBand from "./TodayImpactBand";
 import { CHECKIN_MESSAGES, STREAK_7_MESSAGES, STREAK_30_MESSAGES, getRandomMessage } from "./celebrationMessages";
 import ImpactExplainer from "./ImpactExplainer";
+import NorthStar from "./NorthStar";
 import "./CheckInScreen.css";
 
 /**
@@ -67,7 +68,8 @@ export default function CheckInScreen({ userId }) {
   const [notifStatus, setNotifStatus] = useState("unknown");
   const [last7Checkins, setLast7Checkins] = useState([]); 
   const [celebration, setCelebration] = useState(null);
-  const [showExplainer, setShowExplainer] = useState(false);// unknown | default | granted | denied
+  const [showExplainer, setShowExplainer] = useState(false);
+  const [showNorthStar, setShowNorthStar] = useState(false);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -89,6 +91,11 @@ export default function CheckInScreen({ userId }) {
   useEffect(() => {
   if (userId && !localStorage.getItem(`ember_explainer_seen_${userId}`)) {
     setShowExplainer(true);
+  }
+}, [userId]);
+useEffect(() => {
+  if (userId && !localStorage.getItem(`ember_northstar_seen_${userId}`)) {
+    setShowNorthStar(true);
   }
 }, [userId]);
 
@@ -356,6 +363,15 @@ setTimeout(() => setCelebration(null), 4000);
     onClose={() => {
       localStorage.setItem(`ember_explainer_seen_${userId}`, "true");
       setShowExplainer(false);
+    }}
+  />
+)}
+{showNorthStar && (
+  <NorthStar
+    userId={userId}
+    onClose={() => {
+      localStorage.setItem(`ember_northstar_seen_${userId}`, "true");
+      setShowNorthStar(false);
     }}
   />
 )}

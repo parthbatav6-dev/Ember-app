@@ -36,7 +36,7 @@ export default function CollectiveImpact({ tier }) {
 
       <div className="ember-impact-tiers">
         {TIERS.map((t) => {
-  const isLocked = t.premium && tier !== "premium";
+  const isLocked = t.premium && tier !== "paid";
   const count = impact[t.key] || 0;
   const tokensTowardNext = tokens % t.tokens;
   const progressPct = Math.round((tokensTowardNext / t.tokens) * 100);

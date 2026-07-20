@@ -308,3 +308,8 @@
   opacity: 0.5;
   font-size: 11px;
 }
+.ember-multiplier-badge {
+  color: #F5A623;
+  font-weight: 600;
+  font-style: normal;
+}

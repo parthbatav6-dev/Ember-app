@@ -249,6 +249,7 @@ setTimeout(() => setCelebration(null), 4000);
       {celebration && (
   <div className="ember-celebration">
     {celebration}
+    {userTier === "premium" && <span className="ember-multiplier-badge"> ×2 impact</span>}
   </div>
 )}
 

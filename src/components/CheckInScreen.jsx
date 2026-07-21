@@ -19,6 +19,7 @@ import AnalyticsDashboard from "./AnalyticsDashboard";
 import PodScreen from "./PodScreen";
 import SideMenu from "./SideMenu";
 import RecoveryPrompt from "./RecoveryPrompt";
+import ParticleBurst from "./ParticleBurst";
 import "./CheckInScreen.css";
 
 /**
@@ -104,7 +105,8 @@ export default function CheckInScreen({ userId }) {
   const [showPod, setShowPod] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showPillarsModal, setShowPillarsModal] = useState(false);
-  const [showImpactModal, setShowImpactModal] = useState(false);// unknown | default | granted | denied
+  const [showImpactModal, setShowImpactModal] = useState(false);
+  const [burstHabitId, setBurstHabitId] = useState(null);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -209,6 +211,8 @@ setLast7Checkins(weekCheckins || []);
           : h
       )
     );
+    setBurstHabitId(habit.id);
+setTimeout(() => setBurstHabitId(null), 700);
 
    const { data: insertedCheckin, error: insertErr } = await supabase
       .from("habit_checkins")
@@ -322,17 +326,19 @@ if (habit.pillar === "body") {
         {habits.map((habit) => (
           <li key={habit.id} id={`habit-${habit.id}`} className={`ember-row ${habit.checkedInToday ? "is-done" : ""}`}>
             <button
-              className="ember-checkbox"
-              onClick={() => toggleCheckIn(habit)}
-              disabled={habit.checkedInToday}
-              aria-label={
-                habit.checkedInToday
-                  ? `${habit.name} already checked in today`
-                  : `Check in ${habit.name}`
-              }
-            >
-              {habit.checkedInToday ? "✓" : ""}
-            </button>
+  className="ember-checkbox"
+  onClick={() => toggleCheckIn(habit)}
+  disabled={habit.checkedInToday}
+  aria-label={
+    habit.checkedInToday
+      ? `${habit.name} already checked in today`
+      : `Check in ${habit.name}`
+  }
+  style={{ position: "relative" }}
+>
+  {habit.checkedInToday ? "✓" : ""}
+  <ParticleBurst trigger={burstHabitId === habit.id} />
+</button>
 
             <span className="ember-icon">{habit.icon}</span>
 

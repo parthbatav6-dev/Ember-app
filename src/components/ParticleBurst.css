@@ -1,0 +1,19 @@
+.ember-particle-container {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.ember-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #F5A623;
+  box-shadow: 0 0 6px #F5A623;
+  animation: ember-particle-fly 0.6s ease-out forwards;
+}
+@keyframes ember-particle-fly {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.3); opacity: 0; }
+}

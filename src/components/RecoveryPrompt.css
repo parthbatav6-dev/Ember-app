@@ -1,0 +1,14 @@
+.ember-recovery-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 65; padding: 16px;
+}
+.ember-recovery-card {
+  background: #1C1917; border-radius: 16px; padding: 24px;
+  max-width: 380px; width: 100%; text-align: center;
+}
+.ember-recovery-eyebrow { color: #F5A623; font-size: 12px; letter-spacing: 0.05em; margin: 0 0 8px; }
+.ember-recovery-title { color: #E7DFD3; font-size: 19px; font-family: var(--font-voice, serif); font-style: italic; margin: 0 0 12px; }
+.ember-recovery-body { color: #E7DFD3; font-size: 13px; line-height: 1.6; opacity: 0.85; margin: 0 0 20px; }
+.ember-recovery-start { width: 100%; background: #EA580C; color: #1C1917; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+.ember-recovery-skip { width: 100%; background: none; border: none; color: #57534E; font-size: 13px; padding: 6px; }

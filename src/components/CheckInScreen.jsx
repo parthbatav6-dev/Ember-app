@@ -79,7 +79,8 @@ export default function CheckInScreen({ userId }) {
   const [showCertificate, setShowCertificate] = useState(false);
   const [username, setUsername] = useState("");
   const [showTimer, setShowTimer] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);// unknown | default | granted | denied
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -119,7 +120,7 @@ useEffect(() => {
 
     const { data: habitRows, error: habitsErr } = await supabase
       .from("habits")
-      .select("id, name, icon, current_streak, is_active, reminder_time")
+      .select("id, name, icon, current_streak, is_active, reminder_time, pillar")
       .eq("user_id", userId)
       .eq("is_active", true)
       .order("created_at", { ascending: true });
@@ -223,6 +224,9 @@ const { error: tokenErr } = await supabase.rpc("award_tokens", {
 if (tokenErr) console.error("award_tokens failed:", tokenErr);
 setCelebration(getRandomMessage(CHECKIN_MESSAGES));
 setTimeout(() => setCelebration(null), 4000);
+if (habit.pillar === "body") {
+  setShowRecoveryPrompt(true);
+}
 
     // Re-sync with DB-computed streak (trigger already updated it server-side)
     fetchHabits();
@@ -429,6 +433,12 @@ setTimeout(() => setCelebration(null), 4000);
 )}
 {showAnalytics && (
   <AnalyticsDashboard userId={userId} tier={userTier} onClose={() => setShowAnalytics(false)} />
+)}
+{showRecoveryPrompt && (
+  <RecoveryPrompt
+    onStartRecovery={() => { setShowRecoveryPrompt(false); setShowTimer(true); }}
+    onDismiss={() => setShowRecoveryPrompt(false)}
+  />
 )}
     </div>
   );

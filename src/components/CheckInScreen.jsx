@@ -260,21 +260,10 @@ if (habit.pillar === "body") {
         </p>
       </header>
       <FlowScore userId={userId} />
-      <PillarScores userId={userId} />
-      <WeeklyStats habits={habits} last7DaysCheckins={last7Checkins} />
-      <TodayImpactBand userId={userId} />
-      <CollectiveImpact tier={userTier} />
-      <button className="ember-cert-trigger" onClick={() => setShowCertificate(true)}>
-  🏆 View my impact certificate
-</button>
-<button className="ember-timer-trigger" onClick={() => setShowTimer(true)}>
+<WeeklyStats habits={habits} last7DaysCheckins={last7Checkins} />
+<TodayImpactBand userId={userId} />
+      <button className="ember-timer-trigger" onClick={() => setShowTimer(true)}>
   ⏱ Start Deep Work
-</button>
-<button className="ember-cert-trigger" onClick={() => setShowAnalytics(true)}>
-  📊 View my insights
-</button>
-<button className="ember-cert-trigger" onClick={() => setShowPod(true)}>
-  👥 My Pod
 </button>
 
       {error && <div className="ember-error">{error}</div>}

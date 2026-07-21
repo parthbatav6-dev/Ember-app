@@ -17,6 +17,8 @@ import ImpactCertificate from "./ImpactCertificate";
 import FocusTimer from "./FocusTimer";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import PodScreen from "./PodScreen";
+import SideMenu from "./SideMenu";
+import RecoveryPrompt from "./RecoveryPrompt";
 import "./CheckInScreen.css";
 
 /**

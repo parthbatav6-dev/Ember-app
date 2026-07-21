@@ -16,6 +16,7 @@ import PillarScores from "./PillarScores";
 import ImpactCertificate from "./ImpactCertificate";
 import FocusTimer from "./FocusTimer";
 import AnalyticsDashboard from "./AnalyticsDashboard";
+import PodScreen from "./PodScreen";
 import "./CheckInScreen.css";
 
 /**
@@ -80,7 +81,8 @@ export default function CheckInScreen({ userId }) {
   const [username, setUsername] = useState("");
   const [showTimer, setShowTimer] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false);// unknown | default | granted | denied
+  const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false);
+  const [showPod, setShowPod] = useState(false);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -265,6 +267,9 @@ if (habit.pillar === "body") {
 <button className="ember-cert-trigger" onClick={() => setShowAnalytics(true)}>
   📊 View my insights
 </button>
+<button className="ember-cert-trigger" onClick={() => setShowPod(true)}>
+  👥 My Pod
+</button>
 
       {error && <div className="ember-error">{error}</div>}
       {celebration && (
@@ -439,6 +444,9 @@ if (habit.pillar === "body") {
     onStartRecovery={() => { setShowRecoveryPrompt(false); setShowTimer(true); }}
     onDismiss={() => setShowRecoveryPrompt(false)}
   />
+)}
+{showPod && (
+  <PodScreen userId={userId} tier={userTier} onClose={() => setShowPod(false)} />
 )}
     </div>
   );

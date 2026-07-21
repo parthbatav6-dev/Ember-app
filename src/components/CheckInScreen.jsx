@@ -83,7 +83,9 @@ export default function CheckInScreen({ userId }) {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false);
   const [showPod, setShowPod] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);// unknown | default | granted | denied
+  const [showMenu, setShowMenu] = useState(false);
+  const [showPillarsModal, setShowPillarsModal] = useState(false);
+  const [showImpactModal, setShowImpactModal] = useState(false);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -460,6 +462,22 @@ if (habit.pillar === "body") {
   onOpenPod={() => setShowPod(true)}
   onOpenNorthStar={() => setShowNorthStar(true)}
 />
+{showPillarsModal && (
+  <div className="ember-simple-modal-backdrop" onClick={() => setShowPillarsModal(false)}>
+    <div className="ember-simple-modal-card" onClick={(e) => e.stopPropagation()}>
+      <PillarScores userId={userId} />
+      <button className="ember-cert-close" onClick={() => setShowPillarsModal(false)}>Close</button>
+    </div>
+  </div>
+)}
+{showImpactModal && (
+  <div className="ember-simple-modal-backdrop" onClick={() => setShowImpactModal(false)}>
+    <div className="ember-simple-modal-card" onClick={(e) => e.stopPropagation()}>
+      <CollectiveImpact tier={userTier} />
+      <button className="ember-cert-close" onClick={() => setShowImpactModal(false)}>Close</button>
+    </div>
+  </div>
+)}
     </div>
   );
 }

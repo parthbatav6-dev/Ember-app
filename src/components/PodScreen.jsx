@@ -35,12 +35,16 @@ export default function PodScreen({ userId, tier, onClose }) {
 }
 
   async function createPod() {
-    if (!podName.trim()) return;
-    const { data: newPod, error: createErr } = await supabase
-      .from("pods")
-      .insert({ name: podName.trim(), created_by: userId })
-      .select()
-      .single();
+  if (!podName.trim()) return;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  console.log("userId prop:", userId, "| actual auth user:", user?.id);
+
+  const { data: newPod, error: createErr } = await supabase
+    .from("pods")
+    .insert({ name: podName.trim(), created_by: userId })
+    .select()
+    .single();
 
     if (createErr) { setError("Couldn't create pod."); return; }
 

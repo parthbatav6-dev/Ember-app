@@ -82,7 +82,8 @@ export default function CheckInScreen({ userId }) {
   const [showTimer, setShowTimer] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false);
-  const [showPod, setShowPod] = useState(false);// unknown | default | granted | denied
+  const [showPod, setShowPod] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -242,6 +243,7 @@ if (habit.pillar === "body") {
   return (
     <div className="ember-screen">
       <header className="ember-header">
+        <button className="ember-menu-toggle" onClick={() => setShowMenu(true)}>☰</button>
         <p className="ember-eyebrow">Today</p>
         <h1 className="ember-title">Keep the fire lit.</h1>
         {northStar && (
@@ -448,6 +450,16 @@ if (habit.pillar === "body") {
 {showPod && (
   <PodScreen userId={userId} tier={userTier} onClose={() => setShowPod(false)} />
 )}
+<SideMenu
+  isOpen={showMenu}
+  onClose={() => setShowMenu(false)}
+  onOpenPillars={() => setShowPillarsModal(true)}
+  onOpenImpact={() => setShowImpactModal(true)}
+  onOpenCertificate={() => setShowCertificate(true)}
+  onOpenAnalytics={() => setShowAnalytics(true)}
+  onOpenPod={() => setShowPod(true)}
+  onOpenNorthStar={() => setShowNorthStar(true)}
+/>
     </div>
   );
 }

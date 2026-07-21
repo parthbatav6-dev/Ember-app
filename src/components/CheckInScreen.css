@@ -347,3 +347,11 @@
 .ember-simple-modal-card {
   background: #1C1917; border-radius: 16px; padding: 20px; max-width: 400px; width: 100%;
 }
+@keyframes ember-pulse {
+  0%, 100% { box-shadow: 0 0 18px #F5A623; }
+  50% { box-shadow: 0 0 26px #F5A623; }
+}
+@keyframes ember-pulse-intense {
+  0%, 100% { box-shadow: 0 0 26px #60A5FA; }
+  50% { box-shadow: 0 0 36px #60A5FA; }
+}

@@ -47,14 +47,31 @@ const MOCK_HABITS = [
 
 // Ember glow intensity scales with streak length — the signature element.
 function emberStyle(streak) {
-  const clamped = Math.min(streak, 60);
-  const glow = 4 + (clamped / 60) * 22; // px blur radius
-  const opacity = 0.35 + (clamped / 60) * 0.65;
-  const hue = streak >= 30 ? "#F5A623" : "#EA580C"; // brighter gold once streak matures
+  let hue, glow, opacity, animation;
+
+  if (streak >= 30) {
+    hue = "#60A5FA"; // intense blue flame
+    glow = 26;
+    opacity = 1;
+    animation = "ember-pulse-intense 1.4s ease-in-out infinite";
+  } else if (streak >= 7) {
+    hue = "#F5A623"; // warm amber glow
+    glow = 18;
+    opacity = 0.9;
+    animation = "ember-pulse 2s ease-in-out infinite";
+  } else {
+    const clamped = Math.min(streak, 6);
+    hue = "#EA580C";
+    glow = 4 + (clamped / 6) * 10;
+    opacity = 0.35 + (clamped / 6) * 0.4;
+    animation = "none";
+  }
+
   return {
     boxShadow: `0 0 ${glow}px ${hue}`,
     backgroundColor: hue,
     opacity,
+    animation,
   };
 }
 

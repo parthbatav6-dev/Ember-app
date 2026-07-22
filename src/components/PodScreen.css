@@ -11,3 +11,27 @@
 .ember-pod-or { color: #57534E; font-size: 12px; text-align: center; margin: 4px 0; }
 .ember-pod-error { color: #E24B4A; font-size: 13px; margin: 8px 0 0; }
 .ember-pod-close { width: 100%; background: none; border: none; color: #57534E; font-size: 13px; padding: 10px; margin-top: 12px; }
+.ember-pod-block {
+  border-bottom: 1px solid #292420;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+}
+.ember-pod-block:first-of-type {
+  padding-top: 0;
+}
+
+.ember-pod-danger {
+  width: 100%;
+  background: none;
+  border: 1px solid #57534E;
+  color: #E24B4A;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 13px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+.ember-pod-danger:hover {
+  border-color: #E24B4A;
+  background: rgba(226, 75, 74, 0.08);
+}

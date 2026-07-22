@@ -2,7 +2,7 @@ import "./SideMenu.css";
 
 export default function SideMenu({
   isOpen, onClose,
-  onOpenPillars, onOpenImpact, onOpenCertificate, onOpenAnalytics, onOpenPod, onOpenNorthStar
+  onOpenPillars, onOpenImpact, onOpenCertificate, onOpenAnalytics, onOpenPod, onOpenNorthStar, onOpenVitalCheck
 }) {
   return (
     <>
@@ -15,6 +15,7 @@ export default function SideMenu({
         <button className="ember-menu-item" onClick={() => { onOpenCertificate(); onClose(); }}>Impact Certificate</button>
         <button className="ember-menu-item" onClick={() => { onOpenAnalytics(); onClose(); }}>My Insights</button>
         <button className="ember-menu-item" onClick={() => { onOpenPod(); onClose(); }}>My Pod</button>
+        <button className="ember-menu-item" onClick={() => { onOpenVitalCheck(); onClose(); }}>Vital Check</button>
       </div>
     </>
   );

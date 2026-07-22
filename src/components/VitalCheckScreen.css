@@ -1,0 +1,132 @@
+.vc-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 16px;
+}
+
+.vc-card {
+  background: #1C1917;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.vc-eyebrow {
+  color: #F5A623;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px;
+}
+
+.vc-title {
+  color: #E7DFD3;
+  font-size: 28px;
+  font-family: var(--font-voice, serif);
+  font-style: italic;
+  margin: 0 0 14px;
+}
+
+.vc-bpm-unit {
+  font-size: 16px;
+  font-style: normal;
+  color: #57534E;
+}
+
+.vc-body {
+  color: #E7DFD3;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.vc-disclaimer {
+  color: #57534E;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 0 0 18px;
+}
+
+.vc-cta {
+  width: 100%;
+  background: #EA580C;
+  color: #1C1917;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.vc-close {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #57534E;
+  font-size: 13px;
+  padding: 10px;
+  margin-top: 4px;
+  cursor: pointer;
+}
+
+.vc-video-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vc-canvas-hidden {
+  display: none;
+}
+
+/* Progress ring — plain CSS conic-gradient, no animation libraries */
+.vc-progress-ring {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vc-progress-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(#EA580C var(--progress, 0%), #292420 0);
+  transition: background 0.15s linear;
+  animation: vc-pulse 1.4s ease-in-out infinite;
+}
+
+.vc-progress-fill::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  background: #1C1917;
+  border-radius: 50%;
+}
+
+.vc-progress-label {
+  position: relative;
+  z-index: 1;
+  color: #E7DFD3;
+  font-size: 20px;
+  font-family: monospace;
+}
+
+@keyframes vc-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(234, 88, 12, 0); }
+  50%      { box-shadow: 0 0 20px rgba(234, 88, 12, 0.5); }
+}

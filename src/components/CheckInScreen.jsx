@@ -20,6 +20,7 @@ import PodScreen from "./PodScreen";
 import SideMenu from "./SideMenu";
 import RecoveryPrompt from "./RecoveryPrompt";
 import ParticleBurst from "./ParticleBurst";
+import VitalCheckScreen from "./VitalCheckScreen";
 import "./CheckInScreen.css";
 
 /**
@@ -106,7 +107,8 @@ export default function CheckInScreen({ userId }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showPillarsModal, setShowPillarsModal] = useState(false);
   const [showImpactModal, setShowImpactModal] = useState(false);
-  const [burstHabitId, setBurstHabitId] = useState(null);// unknown | default | granted | denied
+  const [burstHabitId, setBurstHabitId] = useState(null);
+  const [showVitalCheck, setShowVitalCheck] = useState(false);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -466,6 +468,9 @@ if (habit.pillar === "body") {
 {showPod && (
   <PodScreen userId={userId} tier={userTier} onClose={() => setShowPod(false)} />
 )}
+{showVitalCheck && (
+  <VitalCheckScreen userId={userId} onClose={() => setShowVitalCheck(false)} />
+)}
 <SideMenu
   isOpen={showMenu}
   onClose={() => setShowMenu(false)}
@@ -475,6 +480,7 @@ if (habit.pillar === "body") {
   onOpenAnalytics={() => setShowAnalytics(true)}
   onOpenPod={() => setShowPod(true)}
   onOpenNorthStar={() => setShowNorthStar(true)}
+  onOpenVitalCheck={() => setShowVitalCheck(true)}
 />
 {showPillarsModal && (
   <div className="ember-simple-modal-backdrop" onClick={() => setShowPillarsModal(false)}>

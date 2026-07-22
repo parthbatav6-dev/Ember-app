@@ -1,0 +1,218 @@
+.ste-container {
+  position: relative;
+  width: 160px;
+  height: 200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* ---------- Glow (ambient light behind everything, intensifies by stage) ---------- */
+.ste-glow {
+  position: absolute;
+  bottom: 20px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 140, 60, 0.35) 0%, rgba(255, 140, 60, 0) 70%);
+  opacity: 0.3;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  filter: blur(2px);
+}
+.ste-stage-spark .ste-glow { opacity: 0.5; }
+.ste-stage-flame .ste-glow { opacity: 0.75; transform: scale(1.15); }
+.ste-stage-spirit .ste-glow {
+  opacity: 1;
+  transform: scale(1.4);
+  animation: ste-glow-pulse 2.4s ease-in-out infinite;
+}
+.ste-stage-extinguish .ste-glow { opacity: 0; transition: opacity 1.5s ease; }
+
+@keyframes ste-glow-pulse {
+  0%, 100% { opacity: 0.85; transform: scale(1.35); }
+  50%      { opacity: 1;    transform: scale(1.5); }
+}
+
+/* ---------- Coal (base ember, always present, dims on extinguish) ---------- */
+.ste-coal {
+  position: absolute;
+  bottom: 12px;
+  width: 46px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ff6a2b 0%, #b8330f 60%, #5c1a08 100%);
+  box-shadow: 0 0 12px 2px rgba(255, 106, 43, 0.6);
+  animation: ste-coal-flicker 3s ease-in-out infinite;
+  transition: opacity 1.2s ease, filter 1.2s ease;
+}
+.ste-stage-extinguish .ste-coal {
+  opacity: 0.5;
+  filter: grayscale(1) brightness(0.6);
+  animation: none;
+}
+@keyframes ste-coal-flicker {
+  0%, 100% { opacity: 0.85; }
+  45%      { opacity: 1; }
+  60%      { opacity: 0.75; }
+}
+
+/* ---------- Spark (small flickering point) ---------- */
+.ste-spark {
+  position: absolute;
+  bottom: 26px;
+  width: 8px;
+  height: 8px;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.ste-stage-spark .ste-spark,
+.ste-stage-flame .ste-spark,
+.ste-stage-spirit .ste-spark {
+  opacity: 1;
+}
+.ste-spark-dot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #ffd27a;
+  box-shadow: 0 0 8px 3px rgba(255, 210, 122, 0.9);
+  animation: ste-spark-flicker 0.9s steps(6) infinite;
+}
+@keyframes ste-spark-flicker {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  20%  { transform: translateY(-6px) scale(0.8); opacity: 0.7; }
+  40%  { transform: translateY(-2px) scale(1.1); opacity: 1; }
+  60%  { transform: translateY(-8px) scale(0.9); opacity: 0.6; }
+  80%  { transform: translateY(-3px) scale(1); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* ---------- Flame (rising tongues) ---------- */
+.ste-flame {
+  position: absolute;
+  bottom: 22px;
+  width: 60px;
+  height: 100px;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.ste-stage-flame .ste-flame,
+.ste-stage-spirit .ste-flame {
+  opacity: 1;
+  transform: scale(1);
+}
+.ste-flame-core,
+.ste-flame-outer {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+  transform-origin: bottom center;
+}
+.ste-flame-outer {
+  width: 44px;
+  height: 80px;
+  margin-left: -22px;
+  background: linear-gradient(0deg, #ff5b1f 0%, #ff8a3d 55%, #ffd27a 100%);
+  animation: ste-flame-sway 2.2s ease-in-out infinite;
+  filter: blur(0.3px);
+}
+.ste-flame-core {
+  width: 22px;
+  height: 52px;
+  margin-left: -11px;
+  background: linear-gradient(0deg, #ffb648 0%, #fff2c4 100%);
+  animation: ste-flame-sway 1.6s ease-in-out infinite reverse;
+}
+@keyframes ste-flame-sway {
+  0%, 100% { transform: scaleY(1) rotate(-2deg) scaleX(1); }
+  25%      { transform: scaleY(1.06) rotate(2deg) scaleX(0.96); }
+  50%      { transform: scaleY(0.94) rotate(-1deg) scaleX(1.03); }
+  75%      { transform: scaleY(1.03) rotate(3deg) scaleX(0.97); }
+}
+
+/* ---------- Ember spirit (full-stage aura + wisp) ---------- */
+.ste-spirit {
+  position: absolute;
+  bottom: 60px;
+  width: 90px;
+  height: 90px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.ste-stage-spirit .ste-spirit { opacity: 1; }
+.ste-spirit-aura {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 200, 130, 0.5) 0%, rgba(255, 200, 130, 0) 70%);
+  animation: ste-aura-breathe 3s ease-in-out infinite;
+}
+.ste-spirit-wisp {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 4px;
+  height: 30px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: linear-gradient(0deg, rgba(255, 210, 122, 0.9), rgba(255, 210, 122, 0));
+  animation: ste-wisp-rise 2.6s ease-in infinite;
+}
+@keyframes ste-aura-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50%      { transform: scale(1.12); opacity: 1; }
+}
+@keyframes ste-wisp-rise {
+  0%   { transform: translateY(0) translateX(0) scaleY(0.6); opacity: 0; }
+  15%  { opacity: 0.9; }
+  100% { transform: translateY(-60px) translateX(8px) scaleY(1.3); opacity: 0; }
+}
+
+/* ---------- Smoke / ash (extinguish animation on broken session) ---------- */
+.ste-smoke {
+  position: absolute;
+  bottom: 20px;
+  width: 60px;
+  height: 100px;
+  opacity: 0;
+  pointer-events: none;
+}
+.ste-stage-extinguish .ste-smoke {
+  opacity: 1;
+}
+.ste-smoke-puff {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  margin-left: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(150, 150, 150, 0.55) 0%, rgba(150, 150, 150, 0) 75%);
+  opacity: 0;
+}
+.ste-stage-extinguish .ste-smoke-1 { animation: ste-smoke-rise 2.2s ease-out 0s forwards; }
+.ste-stage-extinguish .ste-smoke-2 { animation: ste-smoke-rise 2.4s ease-out 0.3s forwards; }
+.ste-stage-extinguish .ste-smoke-3 { animation: ste-smoke-rise 2.6s ease-out 0.6s forwards; }
+@keyframes ste-smoke-rise {
+  0%   { opacity: 0;   transform: translate(0, 0) scale(0.6); }
+  15%  { opacity: 0.55; }
+  100% { opacity: 0;   transform: translate(12px, -90px) scale(1.6); }
+}
+.ste-ash {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  width: 40px;
+  height: 10px;
+  margin-left: -20px;
+  border-radius: 50%;
+  background: #3a3a3a;
+  opacity: 0;
+  transition: opacity 1.5s ease 1s;
+}
+.ste-stage-extinguish .ste-ash { opacity: 0.6; }

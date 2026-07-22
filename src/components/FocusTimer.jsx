@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
+import SparkToEmber from "./SparkToEmber";
 import "./FocusTimer.css";
 
 const DURATIONS = [
@@ -14,6 +15,8 @@ export default function FocusTimer({ userId, habits, onClose }) {
   const [secondsLeft, setSecondsLeft] = useState(DURATIONS[0].seconds);
   const [status, setStatus] = useState("idle"); // idle | running | completed | broken
   const intervalRef = useRef(null);
+  const progress = selectedDuration > 0 ? 1 - secondsLeft / selectedDuration : 0;
+  const visualStatus = status === "completed" ? "complete" : status;
 
   useEffect(() => {
     return () => clearInterval(intervalRef.current);
@@ -125,30 +128,33 @@ export default function FocusTimer({ userId, habits, onClose }) {
         )}
 
         {status === "running" && (
-          <>
-            <p className="ember-timer-eyebrow">Stay with it</p>
-            <div className="ember-timer-clock">{formatTime(secondsLeft)}</div>
-            <p className="ember-timer-hint">Don't leave this screen.</p>
-          </>
-        )}
+  <>
+    <p className="ember-timer-eyebrow">Stay with it</p>
+    <SparkToEmber progress={progress} status={visualStatus} />
+    <div className="ember-timer-clock">{formatTime(secondsLeft)}</div>
+    <p className="ember-timer-hint">Don't leave this screen.</p>
+  </>
+)}
 
         {status === "completed" && (
-          <>
-            <p className="ember-timer-eyebrow">Session complete</p>
-            <h2 className="ember-timer-title">You stayed the whole way.</h2>
-            <p className="ember-timer-body">Your tokens are confirmed — real impact, earned.</p>
-            <button className="ember-timer-start" onClick={onClose}>Done</button>
-          </>
-        )}
+  <>
+    <p className="ember-timer-eyebrow">Session complete</p>
+    <SparkToEmber progress={1} status="complete" />
+    <h2 className="ember-timer-title">You stayed the whole way.</h2>
+    <p className="ember-timer-body">Your tokens are confirmed — real impact, earned.</p>
+    <button className="ember-timer-start" onClick={onClose}>Done</button>
+  </>
+)}
 
         {status === "broken" && (
-          <>
-            <p className="ember-timer-eyebrow">Session broken</p>
-            <h2 className="ember-timer-title">You left early.</h2>
-            <p className="ember-timer-body">This session's tokens weren't earned. Your past impact is still safe.</p>
-            <button className="ember-timer-start" onClick={onClose}>Close</button>
-          </>
-        )}
+  <>
+    <p className="ember-timer-eyebrow">Session broken</p>
+    <SparkToEmber progress={progress} status="broken" />
+    <h2 className="ember-timer-title">You left early.</h2>
+    <p className="ember-timer-body">This session's tokens weren't earned. Your past impact is still safe.</p>
+    <button className="ember-timer-start" onClick={onClose}>Close</button>
+  </>
+)}
       </div>
     </div>
   );

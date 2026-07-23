@@ -15,6 +15,22 @@
   max-width: 400px;
   width: 100%;
   text-align: center;
+  position: relative;
+  will-change: transform;
+  transform-style: preserve-3d;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+.ember-cert-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  transition: opacity 0.2s ease;
 }
 .ember-cert-locked-icon { font-size: 32px; margin: 0 0 12px; }
 .ember-cert-locked-text { color: #E7DFD3; font-size: 15px; margin: 0 0 6px; }

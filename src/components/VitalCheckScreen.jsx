@@ -86,6 +86,10 @@ export default function VitalCheckScreen({ userId, onClose }) {
         finishScan();
         return;
       }
+      if (video.readyState < 2) {
+  rafRef.current = requestAnimationFrame(tick);
+  return;
+}
 
       ctx.drawImage(video, 0, 0, w, h);
       const frame = ctx.getImageData(0, 0, w, h).data;

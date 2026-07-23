@@ -79,9 +79,10 @@
 
 .vc-video-hidden {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
+  top: -9999px;
+  left: -9999px;
+  width: 240px;
+  height: 180px;
   pointer-events: none;
 }
 

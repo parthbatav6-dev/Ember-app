@@ -286,21 +286,15 @@ export default function VitalCheckScreen({ userId, onClose }) {
         {phase === "result" && bpm && (
           <>
             <h2 className="vc-title">{bpm} <span className="vc-bpm-unit">bpm</span></h2>
-            {hrv !== null ? (
-              hrvCategory ? (
-                <p className={`vc-hrv-row vc-hrv-${hrvCategory}`}>
-                  {hrvCategory === "high" && "High HRV — your body's recovery signals look strong today."}
-                  {hrvCategory === "stable" && "Stable HRV — steady and balanced against your recent baseline."}
-                  {hrvCategory === "low" && "Low HRV — lower than your recent baseline, consider prioritizing rest."}
-                </p>
-              ) : (
-                <p className="vc-hrv-row vc-hrv-hint">
-                  Building your HRV baseline — a few more scans and we'll show your trend.
-                </p>
-              )
+            {hrvCategory ? (
+              <p className={`vc-hrv-row vc-hrv-${hrvCategory}`}>
+                {hrvCategory === "high" && "High HRV — your body's recovery signals look strong today."}
+                {hrvCategory === "stable" && "Stable HRV — steady and balanced against your recent baseline."}
+                {hrvCategory === "low" && "Low HRV — lower than your recent baseline, consider prioritizing rest."}
+              </p>
             ) : (
-              <p className="vc-hrv-row vc-hrv-unclear">
-                HRV reading wasn't clear this time — try again holding very still
+              <p className="vc-hrv-row vc-hrv-hint">
+                Building your HRV baseline — a few more scans and we'll show your trend.
               </p>
             )}
             <p className="vc-body">Reading saved to your Vital Check history.</p>

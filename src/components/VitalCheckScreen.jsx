@@ -172,8 +172,8 @@ export default function VitalCheckScreen({ userId, onClose }) {
       // fixed population number — this is far more forgiving of any consistent
       // measurement bias in the scan method itself, since the same bias applies
       // to every past reading too and cancels out in the comparison.
-      let category = null;
-      if (hrvValue !== null) {
+      let category = "stable"; // safe default whenever we can't confidently tell High from Low
+      if (hrvValue !== null && hrvConfidenceValue === "high") {
         const { data: recentChecks } = await supabase
           .from("vital_checks")
           .select("hrv_rmssd")
@@ -188,8 +188,9 @@ export default function VitalCheckScreen({ userId, onClose }) {
           const pctDiff = (hrvValue - baseline) / baseline;
           if (pctDiff > 0.1) category = "high";
           else if (pctDiff < -0.1) category = "low";
-          else category = "stable";
+          // else stays "stable"
         }
+        // fewer than 3 prior readings -> not enough baseline yet, stays "stable"
       }
       setHrvCategory(category);
 
@@ -286,15 +287,11 @@ export default function VitalCheckScreen({ userId, onClose }) {
         {phase === "result" && bpm && (
           <>
             <h2 className="vc-title">{bpm} <span className="vc-bpm-unit">bpm</span></h2>
-            {hrvCategory ? (
+            {hrvCategory && (
               <p className={`vc-hrv-row vc-hrv-${hrvCategory}`}>
                 {hrvCategory === "high" && "High HRV — your body's recovery signals look strong today."}
                 {hrvCategory === "stable" && "Stable HRV — steady and balanced against your recent baseline."}
                 {hrvCategory === "low" && "Low HRV — lower than your recent baseline, consider prioritizing rest."}
-              </p>
-            ) : (
-              <p className="vc-hrv-row vc-hrv-hint">
-                Building your HRV baseline — a few more scans and we'll show your trend.
               </p>
             )}
             <p className="vc-body">Reading saved to your Vital Check history.</p>

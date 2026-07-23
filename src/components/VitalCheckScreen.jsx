@@ -7,24 +7,12 @@ const SAMPLE_HZ = 30; // approx frame sampling rate we aim for
 const MIN_BPM = 40;
 const MAX_BPM = 180;
 
-// Physiologically plausible RMSSD range for a resting scan — anything outside
-// this is almost certainly peak-detection noise from a 30s single scan, not a
-// real HRV reading. Elite athletes rarely exceed ~150ms.
-const MIN_PLAUSIBLE_HRV = 10;
-const MAX_PLAUSIBLE_HRV = 150;
-// Absolute hard ceiling — even a "consistent" peak pattern above this is
-// almost certainly a systematic detection error (e.g. catching every other
-// beat), not a real reading. RMSSD essentially never exceeds this even in
-// unusual physiological cases. Overrides confidence entirely — nothing above
-// this is ever shown to the user.
-const ABSOLUTE_MAX_HRV = 200;
-
 export default function VitalCheckScreen({ userId, onClose }) {
   const [phase, setPhase] = useState("intro"); // intro | scanning | result | error
   const [progress, setProgress] = useState(0);
   const [bpm, setBpm] = useState(null);
   const [hrv, setHrv] = useState(null);
-  const [hrvConfidence, setHrvConfidence] = useState(null);
+  const [hrvQuality, setHrvQuality] = useState(null);
   const [hrvCategory, setHrvCategory] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -56,7 +44,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
     samplesRef.current = [];
     setBpm(null);
     setHrv(null);
-    setHrvConfidence(null);
+    setHrvQuality(null);
     setHrvCategory(null);
     setProgress(0);
 
@@ -160,20 +148,23 @@ export default function VitalCheckScreen({ userId, onClose }) {
 
     setBpm(result.bpm);
     setHrv(result.hrv);
-    setHrvConfidence(result.hrvConfidence);
+    setHrvQuality(result.hrvQuality);
     setPhase("result");
-    saveReading(result.bpm, result.hrv, result.hrvConfidence);
+    saveReading(result.bpm, result.hrv, result.hrvQuality);
   }
 
-  async function saveReading(bpmValue, hrvValue, hrvConfidenceValue) {
+  async function saveReading(bpmValue, hrvValue, hrvQualityValue) {
     if (!userId) return;
     try {
-      // Compare today's reading against your own recent history rather than a
-      // fixed population number — this is far more forgiving of any consistent
-      // measurement bias in the scan method itself, since the same bias applies
-      // to every past reading too and cancels out in the comparison.
-      let category = "stable"; // safe default whenever we can't confidently tell High from Low
-      if (hrvValue !== null && hrvConfidenceValue === "high") {
+      // Only ever classify High/Stable/Low when the scan itself produced a
+      // trustworthy HRV value. On a poor-quality scan, category stays null —
+      // we show an honest "rescan" message instead of guessing, since a
+      // fabricated category would contradict the app's own wellness disclaimer.
+      let category = null;
+      if (hrvValue !== null && hrvQualityValue === "good") {
+        // Compare today's reading against your own recent history rather than
+        // a fixed population number — forgiving of any consistent measurement
+        // bias in the scan method, since it applies equally to past readings.
         const { data: recentChecks } = await supabase
           .from("vital_checks")
           .select("hrv_rmssd")
@@ -188,9 +179,9 @@ export default function VitalCheckScreen({ userId, onClose }) {
           const pctDiff = (hrvValue - baseline) / baseline;
           if (pctDiff > 0.1) category = "high";
           else if (pctDiff < -0.1) category = "low";
-          // else stays "stable"
+          else category = "stable";
         }
-        // fewer than 3 prior readings -> not enough baseline yet, stays "stable"
+        // fewer than 3 prior readings -> not enough baseline yet, category stays null
       }
       setHrvCategory(category);
 
@@ -200,7 +191,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
           user_id: userId,
           bpm: bpmValue,
           hrv_rmssd: hrvValue,
-          hrv_confidence: hrvConfidenceValue,
+          hrv_quality: hrvQualityValue,
           hrv_category: category,
         })
         .select()
@@ -220,7 +211,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
         value: {
           bpm: bpmValue,
           hrv_rmssd: hrvValue,
-          hrv_confidence: hrvConfidenceValue,
+          hrv_quality: hrvQualityValue,
           hrv_category: category,
           vital_check_id: vitalRow.id,
         },
@@ -237,7 +228,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
     setProgress(0);
     setBpm(null);
     setHrv(null);
-    setHrvConfidence(null);
+    setHrvQuality(null);
     setHrvCategory(null);
     setErrorMsg(null);
   }
@@ -287,7 +278,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
         {phase === "result" && bpm && (
           <>
             <h2 className="vc-title">{bpm} <span className="vc-bpm-unit">bpm</span></h2>
-            {hrvCategory && (
+            {hrvCategory ? (
               <>
                 <p className={`vc-hrv-row vc-hrv-${hrvCategory}`}>
                   {hrvCategory === "high" && "High HRV — above your baseline"}
@@ -318,6 +309,14 @@ export default function VitalCheckScreen({ userId, onClose }) {
                   )}
                 </ul>
               </>
+            ) : hrvQuality === "good" ? (
+              <p className="vc-hrv-row vc-hrv-hint">
+                Building your HRV baseline — a few more clean scans and we'll show your trend.
+              </p>
+            ) : (
+              <p className="vc-hrv-row vc-hrv-hint">
+                Signal too noisy for an HRV reading this time — hold steady and rescan.
+              </p>
             )}
             <p className="vc-body">Reading saved to your Vital Check history.</p>
             <p className="vc-disclaimer">
@@ -419,58 +418,51 @@ function computeBpmAndHrv(samples) {
 
   if (peakTimesSec.length < 4) return null; // not enough clean peaks for a confident reading
 
-  const intervalsMs = [];
+  const rawIntervalsMs = [];
   for (let i = 1; i < peakTimesSec.length; i++) {
-    intervalsMs.push((peakTimesSec[i] - peakTimesSec[i - 1]) * 1000);
+    rawIntervalsMs.push((peakTimesSec[i] - peakTimesSec[i - 1]) * 1000);
   }
 
-  const avgIntervalMs = intervalsMs.reduce((a, b) => a + b, 0) / intervalsMs.length;
+  const avgIntervalMs = rawIntervalsMs.reduce((a, b) => a + b, 0) / rawIntervalsMs.length;
   const bpm = Math.round(60000 / avgIntervalMs);
 
   if (bpm < MIN_BPM || bpm > MAX_BPM) return null;
 
-  // Signal-quality gate: if peak-to-peak intervals are wildly inconsistent
-  // (high coefficient of variation), the peaks themselves are likely noise,
-  // not real heartbeats — don't compute HRV from a shaky peak sequence.
-  const meanInterval = avgIntervalMs;
-  const variance =
-    intervalsMs.reduce((a, b) => a + (b - meanInterval) ** 2, 0) / intervalsMs.length;
-  const coeffOfVariation = Math.sqrt(variance) / meanInterval;
+  // Reject implausible individual inter-beat intervals before computing HRV —
+  // anything outside 300-2000ms (200-40bpm) is a detection error, not a real
+  // beat, and should never be allowed to pollute the variability calculation.
+  const validIbisMs = rawIntervalsMs.filter((ibi) => ibi >= 300 && ibi <= 2000);
+  const rejectionRate = 1 - validIbisMs.length / rawIntervalsMs.length;
 
-  // Instead of hard-rejecting every reading outside a strict band (which, on a
-  // single 30-45s phone scan, can mean "unclear" forever), compute HRV whenever
-  // there are enough intervals, and label its confidence honestly instead of
-  // hiding the number. High confidence: intervals consistent AND within the
-  // plausible physiological range. Low confidence: still shown, but flagged
-  // as preliminary — useful as a rough trend point, not a precise reading.
+  // Honest signal-quality gate: if too many intervals were rejected, or too
+  // few remain, don't compute HRV at all — show a plain "rescan" message
+  // instead of ever fabricating a category from a bad signal.
   let hrv = null;
-  let hrvConfidence = null; // "high" | "low" | null
-  if (intervalsMs.length >= 3) {
-    const successiveDiffsSquared = [];
-    for (let i = 1; i < intervalsMs.length; i++) {
-      const diff = intervalsMs[i] - intervalsMs[i - 1];
-      successiveDiffsSquared.push(diff * diff);
-    }
-    const meanSquaredDiff =
-      successiveDiffsSquared.reduce((a, b) => a + b, 0) / successiveDiffsSquared.length;
-    hrv = Math.round(Math.sqrt(meanSquaredDiff));
-
-    const withinPlausibleRange = hrv >= MIN_PLAUSIBLE_HRV && hrv <= MAX_PLAUSIBLE_HRV * 2;
-    const consistentPeaks = coeffOfVariation < 0.25;
-
-    if (hrv > ABSOLUTE_MAX_HRV || hrv < MIN_PLAUSIBLE_HRV) {
-      // Hard reject — no confidence label makes an implausible number trustworthy.
-      hrv = null;
-      hrvConfidence = null;
-    } else if (withinPlausibleRange && consistentPeaks) {
-      hrvConfidence = "high";
-    } else if (withinPlausibleRange || coeffOfVariation < 0.4) {
-      hrvConfidence = "low";
-    } else {
-      hrv = null; // genuinely too noisy even for a rough estimate
-      hrvConfidence = null;
-    }
+  let hrvQuality = "poor"; // "good" | "poor"
+  if (validIbisMs.length >= 10 && rejectionRate <= 0.3) {
+    hrv = calculateRMSSD(validIbisMs);
+    hrvQuality = "good";
   }
 
-  return { bpm, hrv, hrvConfidence };
+  return { bpm, hrv, hrvQuality };
+}
+
+// RMSSD = root mean square of successive differences between inter-beat
+// intervals — the standard formula behind nearly every consumer HRV reading.
+// This measures beat-to-beat *variability*, not the average interval itself
+// (averaging raw intervals gives you resting heart rate's RR interval,
+// ~550-600ms, which is a completely different — and much larger — number
+// than real HRV, ~20-100ms for a healthy adult).
+function calculateRMSSD(ibiMs) {
+  if (ibiMs.length < 2) return null;
+
+  const successiveDiffs = [];
+  for (let i = 1; i < ibiMs.length; i++) {
+    successiveDiffs.push(ibiMs[i] - ibiMs[i - 1]);
+  }
+
+  const squaredDiffs = successiveDiffs.map((d) => d * d);
+  const meanSquared = squaredDiffs.reduce((a, b) => a + b, 0) / squaredDiffs.length;
+
+  return Math.round(Math.sqrt(meanSquared));
 }

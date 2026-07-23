@@ -68,6 +68,11 @@
   color: #57534E;
 }
 
+.vc-hrv-hint {
+  color: #57534E;
+  font-style: italic;
+}
+
 .vc-hrv-high {
   color: #60A5FA;
 }

@@ -39,6 +39,17 @@
   color: #57534E;
 }
 
+.vc-hrv-row {
+  color: #E7DFD3;
+  font-size: 14px;
+  margin: 0 0 14px;
+}
+
+.vc-hrv-hint {
+  color: #57534E;
+  font-size: 12px;
+}
+
 .vc-body {
   color: #E7DFD3;
   font-size: 14px;
@@ -77,15 +88,14 @@
   cursor: pointer;
 }
 
-.vc-video-preview {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin: 0 auto 16px;
-  display: block;
-  border: 2px solid #EA580C;
+.vc-video-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
+
 .vc-canvas-hidden {
   display: none;
 }
@@ -130,7 +140,4 @@
 @keyframes vc-pulse {
   0%, 100% { box-shadow: 0 0 0 rgba(234, 88, 12, 0); }
   50%      { box-shadow: 0 0 20px rgba(234, 88, 12, 0.5); }
-}
-.vc-video-inactive {
-  display: none;
 }

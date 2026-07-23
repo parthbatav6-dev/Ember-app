@@ -11,6 +11,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
   const [phase, setPhase] = useState("intro"); // intro | scanning | result | error
   const [progress, setProgress] = useState(0);
   const [bpm, setBpm] = useState(null);
+  const [hrv, setHrv] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
   const videoRef = useRef(null);
@@ -33,6 +34,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
     setErrorMsg(null);
     samplesRef.current = [];
     setBpm(null);
+    setHrv(null);
     setProgress(0);
 
     try {
@@ -86,10 +88,6 @@ export default function VitalCheckScreen({ userId, onClose }) {
         finishScan();
         return;
       }
-      if (video.readyState < 2) {
-  rafRef.current = requestAnimationFrame(tick);
-  return;
-}
 
       ctx.drawImage(video, 0, 0, w, h);
       const frame = ctx.getImageData(0, 0, w, h).data;
@@ -114,7 +112,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
 
   function finishScan() {
     stopCamera();
-    const result = computeBpm(samplesRef.current);
+    const result = computeBpmAndHrv(samplesRef.current);
 
     if (result === null) {
       setErrorMsg("Couldn't get a clear reading. Make sure your fingertip fully covers the camera and hold still.");
@@ -122,17 +120,18 @@ export default function VitalCheckScreen({ userId, onClose }) {
       return;
     }
 
-    setBpm(result);
+    setBpm(result.bpm);
+    setHrv(result.hrv);
     setPhase("result");
-    saveReading(result);
+    saveReading(result.bpm, result.hrv);
   }
 
-  async function saveReading(bpmValue) {
+  async function saveReading(bpmValue, hrvValue) {
     if (!userId) return;
     try {
       const { data: vitalRow, error: vitalErr } = await supabase
         .from("vital_checks")
-        .insert({ user_id: userId, bpm: bpmValue })
+        .insert({ user_id: userId, bpm: bpmValue, hrv_rmssd: hrvValue })
         .select()
         .single();
 
@@ -147,7 +146,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
         signal_type: "vital_check",
         source: "app",
         habit_id: null,
-        value: { bpm: bpmValue, vital_check_id: vitalRow.id },
+        value: { bpm: bpmValue, hrv_rmssd: hrvValue, vital_check_id: vitalRow.id },
         occurred_at: vitalRow.created_at,
       });
     } catch (err) {
@@ -160,6 +159,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
     setPhase("intro");
     setProgress(0);
     setBpm(null);
+    setHrv(null);
     setErrorMsg(null);
   }
 
@@ -186,12 +186,9 @@ export default function VitalCheckScreen({ userId, onClose }) {
           </>
         )}
 
-        <video
-  ref={videoRef}
-  className={`vc-video-preview ${phase !== "scanning" ? "vc-video-inactive" : ""}`}
-  playsInline
-  muted
-/>
+        {(phase === "scanning" || phase === "error" || phase === "result") && (
+          <video ref={videoRef} className="vc-video-hidden" playsInline muted />
+        )}
         <canvas ref={canvasRef} width={64} height={48} className="vc-canvas-hidden" />
 
         {phase === "scanning" && (
@@ -208,6 +205,12 @@ export default function VitalCheckScreen({ userId, onClose }) {
         {phase === "result" && bpm && (
           <>
             <h2 className="vc-title">{bpm} <span className="vc-bpm-unit">bpm</span></h2>
+            {hrv !== null && (
+              <p className="vc-hrv-row">
+                HRV <strong>{hrv} ms</strong>
+                <span className="vc-hrv-hint"> — track over multiple scans for a trend</span>
+              </p>
+            )}
             <p className="vc-body">Reading saved to your Vital Check history.</p>
             <p className="vc-disclaimer">
               Wellness estimate, not a medical device. Consult a doctor for diagnosis.
@@ -231,7 +234,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
 }
 
 /**
- * Detrend + peak-detection heart rate estimator.
+ * Detrend + peak-detection heart rate + HRV estimator.
  * No external DSP libraries — deliberately dependency-free.
  *
  * 1. Resample the (irregularly-timed, requestAnimationFrame-driven) samples
@@ -239,8 +242,12 @@ export default function VitalCheckScreen({ userId, onClose }) {
  * 2. Detrend by subtracting a rolling average (removes lighting drift/baseline wander).
  * 3. Find peaks with a minimum-distance constraint matching MAX_BPM.
  * 4. Average the peak-to-peak intervals -> BPM.
+ * 5. RMSSD of successive peak-to-peak interval differences -> HRV (ms).
+ *    This is the same metric consumer wearables report as "HRV" — noisier from
+ *    a 30s camera scan than a continuous wearable reading, so treat it as a
+ *    directional trend across multiple scans rather than a single definitive number.
  */
-function computeBpm(samples) {
+function computeBpmAndHrv(samples) {
   if (samples.length < SAMPLE_HZ * 5) return null; // too little data
 
   const duration = samples[samples.length - 1].t;
@@ -288,14 +295,29 @@ function computeBpm(samples) {
 
   if (peaks.length < 4) return null; // not enough clean peaks for a confident reading
 
-  const intervals = [];
+  // Peak-to-peak intervals in milliseconds (converted from frame counts).
+  const intervalsMs = [];
   for (let i = 1; i < peaks.length; i++) {
-    intervals.push(peaks[i] - peaks[i - 1]);
+    intervalsMs.push(((peaks[i] - peaks[i - 1]) / SAMPLE_HZ) * 1000);
   }
-  const avgIntervalFrames = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-  const avgIntervalSeconds = avgIntervalFrames / SAMPLE_HZ;
-  const bpm = Math.round(60 / avgIntervalSeconds);
+
+  const avgIntervalMs = intervalsMs.reduce((a, b) => a + b, 0) / intervalsMs.length;
+  const bpm = Math.round(60000 / avgIntervalMs);
 
   if (bpm < MIN_BPM || bpm > MAX_BPM) return null;
-  return bpm;
+
+  // RMSSD needs at least 2 successive-difference pairs, i.e. 3+ intervals.
+  let hrv = null;
+  if (intervalsMs.length >= 3) {
+    const successiveDiffsSquared = [];
+    for (let i = 1; i < intervalsMs.length; i++) {
+      const diff = intervalsMs[i] - intervalsMs[i - 1];
+      successiveDiffsSquared.push(diff * diff);
+    }
+    const meanSquaredDiff =
+      successiveDiffsSquared.reduce((a, b) => a + b, 0) / successiveDiffsSquared.length;
+    hrv = Math.round(Math.sqrt(meanSquaredDiff));
+  }
+
+  return { bpm, hrv };
 }

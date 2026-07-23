@@ -25,6 +25,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
   const [bpm, setBpm] = useState(null);
   const [hrv, setHrv] = useState(null);
   const [hrvConfidence, setHrvConfidence] = useState(null);
+  const [hrvCategory, setHrvCategory] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
   const videoRef = useRef(null);
@@ -56,6 +57,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
     setBpm(null);
     setHrv(null);
     setHrvConfidence(null);
+    setHrvCategory(null);
     setProgress(0);
 
     try {
@@ -166,9 +168,40 @@ export default function VitalCheckScreen({ userId, onClose }) {
   async function saveReading(bpmValue, hrvValue, hrvConfidenceValue) {
     if (!userId) return;
     try {
+      // Compare today's reading against your own recent history rather than a
+      // fixed population number — this is far more forgiving of any consistent
+      // measurement bias in the scan method itself, since the same bias applies
+      // to every past reading too and cancels out in the comparison.
+      let category = null;
+      if (hrvValue !== null) {
+        const { data: recentChecks } = await supabase
+          .from("vital_checks")
+          .select("hrv_rmssd")
+          .eq("user_id", userId)
+          .not("hrv_rmssd", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        const priorValues = (recentChecks || []).map((r) => r.hrv_rmssd);
+        if (priorValues.length >= 3) {
+          const baseline = priorValues.reduce((a, b) => a + b, 0) / priorValues.length;
+          const pctDiff = (hrvValue - baseline) / baseline;
+          if (pctDiff > 0.1) category = "high";
+          else if (pctDiff < -0.1) category = "low";
+          else category = "stable";
+        }
+      }
+      setHrvCategory(category);
+
       const { data: vitalRow, error: vitalErr } = await supabase
         .from("vital_checks")
-        .insert({ user_id: userId, bpm: bpmValue, hrv_rmssd: hrvValue, hrv_confidence: hrvConfidenceValue })
+        .insert({
+          user_id: userId,
+          bpm: bpmValue,
+          hrv_rmssd: hrvValue,
+          hrv_confidence: hrvConfidenceValue,
+          hrv_category: category,
+        })
         .select()
         .single();
 
@@ -183,7 +216,13 @@ export default function VitalCheckScreen({ userId, onClose }) {
         signal_type: "vital_check",
         source: "app",
         habit_id: null,
-        value: { bpm: bpmValue, hrv_rmssd: hrvValue, hrv_confidence: hrvConfidenceValue, vital_check_id: vitalRow.id },
+        value: {
+          bpm: bpmValue,
+          hrv_rmssd: hrvValue,
+          hrv_confidence: hrvConfidenceValue,
+          hrv_category: category,
+          vital_check_id: vitalRow.id,
+        },
         occurred_at: vitalRow.created_at,
       });
     } catch (err) {
@@ -198,6 +237,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
     setBpm(null);
     setHrv(null);
     setHrvConfidence(null);
+    setHrvCategory(null);
     setErrorMsg(null);
   }
 
@@ -247,14 +287,17 @@ export default function VitalCheckScreen({ userId, onClose }) {
           <>
             <h2 className="vc-title">{bpm} <span className="vc-bpm-unit">bpm</span></h2>
             {hrv !== null ? (
-              <p className="vc-hrv-row">
-                HRV <strong>{hrv} ms</strong>
-                {hrvConfidence === "low" ? (
-                  <span className="vc-hrv-hint"> — preliminary reading, hold steadier for a cleaner one</span>
-                ) : (
-                  <span className="vc-hrv-hint"> — track over multiple scans for a trend</span>
-                )}
-              </p>
+              hrvCategory ? (
+                <p className={`vc-hrv-row vc-hrv-${hrvCategory}`}>
+                  {hrvCategory === "high" && "High HRV — your body's recovery signals look strong today."}
+                  {hrvCategory === "stable" && "Stable HRV — steady and balanced against your recent baseline."}
+                  {hrvCategory === "low" && "Low HRV — lower than your recent baseline, consider prioritizing rest."}
+                </p>
+              ) : (
+                <p className="vc-hrv-row vc-hrv-hint">
+                  Building your HRV baseline — a few more scans and we'll show your trend.
+                </p>
+              )
             ) : (
               <p className="vc-hrv-row vc-hrv-unclear">
                 HRV reading wasn't clear this time — try again holding very still

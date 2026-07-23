@@ -50,6 +50,18 @@
   font-size: 12px;
 }
 
+.vc-hrv-high {
+  color: #60A5FA;
+}
+
+.vc-hrv-stable {
+  color: #F5A623;
+}
+
+.vc-hrv-low {
+  color: #E24B4A;
+}
+
 .vc-hrv-unclear {
   color: #57534E;
   font-style: italic;

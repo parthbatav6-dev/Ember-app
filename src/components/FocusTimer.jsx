@@ -8,13 +8,35 @@ const DURATIONS = [
   { label: "60 min", seconds: 3600 },
 ];
 
+const ENERGY_OPTIONS = [
+  { value: 1, emoji: "🥱", label: "Drained" },
+  { value: 2, emoji: "😐", label: "Low" },
+  { value: 3, emoji: "🙂", label: "Okay" },
+  { value: 4, emoji: "😊", label: "Good" },
+  { value: 5, emoji: "⚡", label: "Sharp" },
+];
+
+// IST-aware time-of-day bucket — same offset pattern used elsewhere in the app.
+function getTimeOfDayBucket() {
+  const istOffsetMs = 5.5 * 60 * 60 * 1000;
+  const istNow = new Date(Date.now() + istOffsetMs);
+  const hour = istNow.getUTCHours();
+
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 17) return "midday";
+  if (hour >= 17 && hour < 21) return "afternoon"; // kept as a distinct pre-evening bucket
+  return "evening"; // covers evening + night, collapsed for v1 simplicity
+}
+
 export default function FocusTimer({ userId, habits, onClose }) {
   const [selectedDuration, setSelectedDuration] = useState(DURATIONS[0].seconds);
   const [selectedHabit, setSelectedHabit] = useState(habits?.[0]?.id || null);
   const [sessionId, setSessionId] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(DURATIONS[0].seconds);
   const [status, setStatus] = useState("idle"); // idle | running | completed | broken
+  const [preSessionEnergy, setPreSessionEnergy] = useState(null);
   const intervalRef = useRef(null);
+
   const progress = selectedDuration > 0 ? 1 - secondsLeft / selectedDuration : 0;
   const visualStatus = status === "completed" ? "complete" : status;
 
@@ -42,6 +64,8 @@ export default function FocusTimer({ userId, habits, onClose }) {
         user_id: userId,
         habit_id: selectedHabit,
         duration_seconds: selectedDuration,
+        pre_session_energy: preSessionEnergy,
+        time_of_day_bucket: getTimeOfDayBucket(),
       })
       .select()
       .single();
@@ -118,6 +142,21 @@ export default function FocusTimer({ userId, habits, onClose }) {
               </select>
             )}
 
+            <p className="ember-timer-energy-label">How's your energy right now? (optional)</p>
+            <div className="ember-timer-energy-row">
+              {ENERGY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  className={`ember-timer-energy-btn ${preSessionEnergy === opt.value ? "is-selected" : ""}`}
+                  onClick={() => setPreSessionEnergy(opt.value)}
+                  aria-label={opt.label}
+                  title={opt.label}
+                >
+                  {opt.emoji}
+                </button>
+              ))}
+            </div>
+
             <p className="ember-timer-warning">
               Leaving this screen while the timer runs breaks the session — pending tokens will be lost.
             </p>
@@ -128,33 +167,33 @@ export default function FocusTimer({ userId, habits, onClose }) {
         )}
 
         {status === "running" && (
-  <>
-    <p className="ember-timer-eyebrow">Stay with it</p>
-    <SparkToEmber progress={progress} status={visualStatus} />
-    <div className="ember-timer-clock">{formatTime(secondsLeft)}</div>
-    <p className="ember-timer-hint">Don't leave this screen.</p>
-  </>
-)}
+          <>
+            <p className="ember-timer-eyebrow">Stay with it</p>
+            <SparkToEmber progress={progress} status={visualStatus} />
+            <div className="ember-timer-clock">{formatTime(secondsLeft)}</div>
+            <p className="ember-timer-hint">Don't leave this screen.</p>
+          </>
+        )}
 
         {status === "completed" && (
-  <>
-    <p className="ember-timer-eyebrow">Session complete</p>
-    <SparkToEmber progress={1} status="complete" />
-    <h2 className="ember-timer-title">You stayed the whole way.</h2>
-    <p className="ember-timer-body">Your tokens are confirmed — real impact, earned.</p>
-    <button className="ember-timer-start" onClick={onClose}>Done</button>
-  </>
-)}
+          <>
+            <p className="ember-timer-eyebrow">Session complete</p>
+            <SparkToEmber progress={1} status="complete" />
+            <h2 className="ember-timer-title">You stayed the whole way.</h2>
+            <p className="ember-timer-body">Your tokens are confirmed — real impact, earned.</p>
+            <button className="ember-timer-start" onClick={onClose}>Done</button>
+          </>
+        )}
 
         {status === "broken" && (
-  <>
-    <p className="ember-timer-eyebrow">Session broken</p>
-    <SparkToEmber progress={progress} status="broken" />
-    <h2 className="ember-timer-title">You left early.</h2>
-    <p className="ember-timer-body">This session's tokens weren't earned. Your past impact is still safe.</p>
-    <button className="ember-timer-start" onClick={onClose}>Close</button>
-  </>
-)}
+          <>
+            <p className="ember-timer-eyebrow">Session broken</p>
+            <SparkToEmber progress={progress} status="broken" />
+            <h2 className="ember-timer-title">You left early.</h2>
+            <p className="ember-timer-body">This session's tokens weren't earned. Your past impact is still safe.</p>
+            <button className="ember-timer-start" onClick={onClose}>Close</button>
+          </>
+        )}
       </div>
     </div>
   );

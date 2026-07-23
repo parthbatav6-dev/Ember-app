@@ -97,3 +97,30 @@
   margin: 0 0 24px;
   opacity: 0.85;
 }
+.ember-timer-energy-label {
+  color: #57534E;
+  font-size: 12px;
+  margin: 4px 0 8px;
+}
+
+.ember-timer-energy-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.ember-timer-energy-btn {
+  flex: 1;
+  background: #292420;
+  border: 1px solid #57534E;
+  border-radius: 10px;
+  padding: 10px 0;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.ember-timer-energy-btn.is-selected {
+  border-color: #EA580C;
+  background: rgba(234, 88, 12, 0.12);
+}

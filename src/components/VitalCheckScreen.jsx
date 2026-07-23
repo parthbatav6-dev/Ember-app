@@ -12,6 +12,12 @@ const MAX_BPM = 180;
 // real HRV reading. Elite athletes rarely exceed ~150ms.
 const MIN_PLAUSIBLE_HRV = 10;
 const MAX_PLAUSIBLE_HRV = 150;
+// Absolute hard ceiling — even a "consistent" peak pattern above this is
+// almost certainly a systematic detection error (e.g. catching every other
+// beat), not a real reading. RMSSD essentially never exceeds this even in
+// unusual physiological cases. Overrides confidence entirely — nothing above
+// this is ever shown to the user.
+const ABSOLUTE_MAX_HRV = 200;
 
 export default function VitalCheckScreen({ userId, onClose }) {
   const [phase, setPhase] = useState("intro"); // intro | scanning | result | error
@@ -393,7 +399,11 @@ function computeBpmAndHrv(samples) {
     const withinPlausibleRange = hrv >= MIN_PLAUSIBLE_HRV && hrv <= MAX_PLAUSIBLE_HRV * 2;
     const consistentPeaks = coeffOfVariation < 0.25;
 
-    if (withinPlausibleRange && consistentPeaks) {
+    if (hrv > ABSOLUTE_MAX_HRV || hrv < MIN_PLAUSIBLE_HRV) {
+      // Hard reject — no confidence label makes an implausible number trustworthy.
+      hrv = null;
+      hrvConfidence = null;
+    } else if (withinPlausibleRange && consistentPeaks) {
       hrvConfidence = "high";
     } else if (withinPlausibleRange || coeffOfVariation < 0.4) {
       hrvConfidence = "low";

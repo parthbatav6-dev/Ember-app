@@ -88,12 +88,18 @@
   cursor: pointer;
 }
 
-.vc-video-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
+.vc-video-preview {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 16px;
+  display: block;
+  border: 2px solid #EA580C;
+}
+
+.vc-video-inactive {
+  display: none;
 }
 
 .vc-canvas-hidden {

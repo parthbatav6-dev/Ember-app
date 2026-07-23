@@ -89,6 +89,11 @@ export default function VitalCheckScreen({ userId, onClose }) {
         return;
       }
 
+      if (video.readyState < 2) {
+        rafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
       ctx.drawImage(video, 0, 0, w, h);
       const frame = ctx.getImageData(0, 0, w, h).data;
 
@@ -186,9 +191,12 @@ export default function VitalCheckScreen({ userId, onClose }) {
           </>
         )}
 
-        {(phase === "scanning" || phase === "error" || phase === "result") && (
-          <video ref={videoRef} className="vc-video-hidden" playsInline muted />
-        )}
+        <video
+          ref={videoRef}
+          className={`vc-video-preview ${phase !== "scanning" ? "vc-video-inactive" : ""}`}
+          playsInline
+          muted
+        />
         <canvas ref={canvasRef} width={64} height={48} className="vc-canvas-hidden" />
 
         {phase === "scanning" && (

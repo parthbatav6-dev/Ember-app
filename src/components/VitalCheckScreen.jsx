@@ -193,7 +193,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
 
         <video
           ref={videoRef}
-          className={`vc-video-preview ${phase !== "scanning" ? "vc-video-inactive" : ""}`}
+          className="vc-video-preview"
           playsInline
           muted
         />

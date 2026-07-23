@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 import "./VitalCheckScreen.css";
 
-const SCAN_SECONDS = 30;
+const SCAN_SECONDS = 45;
 const SAMPLE_HZ = 30; // approx frame sampling rate we aim for
 const MIN_BPM = 40;
 const MAX_BPM = 180;
@@ -18,6 +18,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
   const [progress, setProgress] = useState(0);
   const [bpm, setBpm] = useState(null);
   const [hrv, setHrv] = useState(null);
+  const [hrvConfidence, setHrvConfidence] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
   const videoRef = useRef(null);
@@ -48,6 +49,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
     samplesRef.current = [];
     setBpm(null);
     setHrv(null);
+    setHrvConfidence(null);
     setProgress(0);
 
     try {
@@ -150,16 +152,17 @@ export default function VitalCheckScreen({ userId, onClose }) {
 
     setBpm(result.bpm);
     setHrv(result.hrv);
+    setHrvConfidence(result.hrvConfidence);
     setPhase("result");
-    saveReading(result.bpm, result.hrv);
+    saveReading(result.bpm, result.hrv, result.hrvConfidence);
   }
 
-  async function saveReading(bpmValue, hrvValue) {
+  async function saveReading(bpmValue, hrvValue, hrvConfidenceValue) {
     if (!userId) return;
     try {
       const { data: vitalRow, error: vitalErr } = await supabase
         .from("vital_checks")
-        .insert({ user_id: userId, bpm: bpmValue, hrv_rmssd: hrvValue })
+        .insert({ user_id: userId, bpm: bpmValue, hrv_rmssd: hrvValue, hrv_confidence: hrvConfidenceValue })
         .select()
         .single();
 
@@ -174,7 +177,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
         signal_type: "vital_check",
         source: "app",
         habit_id: null,
-        value: { bpm: bpmValue, hrv_rmssd: hrvValue, vital_check_id: vitalRow.id },
+        value: { bpm: bpmValue, hrv_rmssd: hrvValue, hrv_confidence: hrvConfidenceValue, vital_check_id: vitalRow.id },
         occurred_at: vitalRow.created_at,
       });
     } catch (err) {
@@ -188,6 +191,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
     setProgress(0);
     setBpm(null);
     setHrv(null);
+    setHrvConfidence(null);
     setErrorMsg(null);
   }
 
@@ -239,7 +243,11 @@ export default function VitalCheckScreen({ userId, onClose }) {
             {hrv !== null ? (
               <p className="vc-hrv-row">
                 HRV <strong>{hrv} ms</strong>
-                <span className="vc-hrv-hint"> — track over multiple scans for a trend</span>
+                {hrvConfidence === "low" ? (
+                  <span className="vc-hrv-hint"> — preliminary reading, hold steadier for a cleaner one</span>
+                ) : (
+                  <span className="vc-hrv-hint"> — track over multiple scans for a trend</span>
+                )}
               </p>
             ) : (
               <p className="vc-hrv-row vc-hrv-unclear">
@@ -364,8 +372,15 @@ function computeBpmAndHrv(samples) {
     intervalsMs.reduce((a, b) => a + (b - meanInterval) ** 2, 0) / intervalsMs.length;
   const coeffOfVariation = Math.sqrt(variance) / meanInterval;
 
+  // Instead of hard-rejecting every reading outside a strict band (which, on a
+  // single 30-45s phone scan, can mean "unclear" forever), compute HRV whenever
+  // there are enough intervals, and label its confidence honestly instead of
+  // hiding the number. High confidence: intervals consistent AND within the
+  // plausible physiological range. Low confidence: still shown, but flagged
+  // as preliminary — useful as a rough trend point, not a precise reading.
   let hrv = null;
-  if (intervalsMs.length >= 3 && coeffOfVariation < 0.25) {
+  let hrvConfidence = null; // "high" | "low" | null
+  if (intervalsMs.length >= 3) {
     const successiveDiffsSquared = [];
     for (let i = 1; i < intervalsMs.length; i++) {
       const diff = intervalsMs[i] - intervalsMs[i - 1];
@@ -375,10 +390,18 @@ function computeBpmAndHrv(samples) {
       successiveDiffsSquared.reduce((a, b) => a + b, 0) / successiveDiffsSquared.length;
     hrv = Math.round(Math.sqrt(meanSquaredDiff));
 
-    if (hrv < MIN_PLAUSIBLE_HRV || hrv > MAX_PLAUSIBLE_HRV) {
-      hrv = null; // still outside plausible bounds — too noisy to trust
+    const withinPlausibleRange = hrv >= MIN_PLAUSIBLE_HRV && hrv <= MAX_PLAUSIBLE_HRV * 2;
+    const consistentPeaks = coeffOfVariation < 0.25;
+
+    if (withinPlausibleRange && consistentPeaks) {
+      hrvConfidence = "high";
+    } else if (withinPlausibleRange || coeffOfVariation < 0.4) {
+      hrvConfidence = "low";
+    } else {
+      hrv = null; // genuinely too noisy even for a rough estimate
+      hrvConfidence = null;
     }
   }
 
-  return { bpm, hrv };
+  return { bpm, hrv, hrvConfidence };
 }

@@ -288,11 +288,36 @@ export default function VitalCheckScreen({ userId, onClose }) {
           <>
             <h2 className="vc-title">{bpm} <span className="vc-bpm-unit">bpm</span></h2>
             {hrvCategory && (
-              <p className={`vc-hrv-row vc-hrv-${hrvCategory}`}>
-                {hrvCategory === "high" && "High HRV — your body's recovery signals look strong today."}
-                {hrvCategory === "stable" && "Stable HRV — steady and balanced against your recent baseline."}
-                {hrvCategory === "low" && "Low HRV — lower than your recent baseline, consider prioritizing rest."}
-              </p>
+              <>
+                <p className={`vc-hrv-row vc-hrv-${hrvCategory}`}>
+                  {hrvCategory === "high" && "High HRV — above your baseline"}
+                  {hrvCategory === "stable" && "Stable HRV — at your baseline"}
+                  {hrvCategory === "low" && "Low HRV — below your baseline"}
+                </p>
+                <ul className="vc-hrv-detail">
+                  {hrvCategory === "high" && (
+                    <>
+                      <li>Your body looks well-recovered right now</li>
+                      <li>Stress load appears low today</li>
+                      <li>You're likely primed for a harder effort if you want one</li>
+                    </>
+                  )}
+                  {hrvCategory === "stable" && (
+                    <>
+                      <li>Your body is holding a steady balance</li>
+                      <li>Sleep and effort look well-matched lately</li>
+                      <li>Nothing unusual to flag today</li>
+                    </>
+                  )}
+                  {hrvCategory === "low" && (
+                    <>
+                      <li>Your body may be under more strain than usual</li>
+                      <li>A lighter day or extra rest could help</li>
+                      <li>Can also follow poor sleep, dehydration, alcohol, or fighting something off</li>
+                    </>
+                  )}
+                </ul>
+              </>
             )}
             <p className="vc-body">Reading saved to your Vital Check history.</p>
             <p className="vc-disclaimer">

@@ -187,7 +187,7 @@ export default function VitalCheckScreen({ userId, onClose }) {
         )}
 
         {(phase === "scanning" || phase === "error" || phase === "result") && (
-          <video ref={videoRef} className="vc-video-hidden" playsInline muted />
+          <video ref={videoRef} className="vc-video-preview" playsInline muted />
         )}
         <canvas ref={canvasRef} width={64} height={48} className="vc-canvas-hidden" />
 

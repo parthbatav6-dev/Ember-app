@@ -77,15 +77,15 @@
   cursor: pointer;
 }
 
-.vc-video-hidden {
-  position: absolute;
-  top: -9999px;
-  left: -9999px;
-  width: 240px;
-  height: 180px;
-  pointer-events: none;
+.vc-video-preview {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 16px;
+  display: block;
+  border: 2px solid #EA580C;
 }
-
 .vc-canvas-hidden {
   display: none;
 }

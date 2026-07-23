@@ -28,7 +28,14 @@ export default function VitalCheckScreen({ userId, onClose }) {
   const startTimeRef = useRef(null);
 
   const stopCamera = useCallback(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    if (rafRef.current) {
+      const video = videoRef.current;
+      if (video && typeof video.cancelVideoFrameCallback === "function") {
+        video.cancelVideoFrameCallback(rafRef.current);
+      } else {
+        cancelAnimationFrame(rafRef.current);
+      }
+    }
     rafRef.current = null;
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
@@ -86,39 +93,49 @@ export default function VitalCheckScreen({ userId, onClose }) {
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     const w = canvas.width;
     const h = canvas.height;
+    let startMediaTime = null;
 
-    function tick() {
-      const elapsed = (performance.now() - startTimeRef.current) / 1000;
-
-      if (elapsed >= SCAN_SECONDS) {
-        finishScan();
-        return;
-      }
-
-      if (video.readyState < 2) {
-        rafRef.current = requestAnimationFrame(tick);
-        return;
-      }
-
+    function sampleFrame(mediaTime) {
+      if (video.readyState < 2) return;
       ctx.drawImage(video, 0, 0, w, h);
       const frame = ctx.getImageData(0, 0, w, h).data;
-
-      // Average the red channel across the sampled region — the fingertip-over-camera
-      // method reads red-channel absorption changes from blood volume pulses.
       let sum = 0;
       const pixelCount = frame.length / 4;
-      for (let i = 0; i < frame.length; i += 4) {
-        sum += frame[i]; // red channel
-      }
+      for (let i = 0; i < frame.length; i += 4) sum += frame[i]; // red channel
       const avgRed = sum / pixelCount;
 
+      if (startMediaTime === null) startMediaTime = mediaTime;
+      const elapsed = mediaTime - startMediaTime;
       samplesRef.current.push({ t: elapsed, value: avgRed });
       setProgress(Math.min(100, Math.round((elapsed / SCAN_SECONDS) * 100)));
-
-      rafRef.current = requestAnimationFrame(tick);
+      return elapsed;
     }
 
-    rafRef.current = requestAnimationFrame(tick);
+    // requestVideoFrameCallback gives the camera's true decode timestamp — far
+    // more precise than estimating time from requestAnimationFrame, which can
+    // drift independently of when frames actually arrive from the camera.
+    if (typeof video.requestVideoFrameCallback === "function") {
+      const onFrame = (_now, metadata) => {
+        const elapsed = sampleFrame(metadata.mediaTime);
+        if (elapsed !== undefined && elapsed >= SCAN_SECONDS) {
+          finishScan();
+          return;
+        }
+        rafRef.current = video.requestVideoFrameCallback(onFrame);
+      };
+      rafRef.current = video.requestVideoFrameCallback(onFrame);
+    } else {
+      // Fallback for browsers without requestVideoFrameCallback (e.g. older Safari).
+      function tick() {
+        const elapsed = sampleFrame(performance.now() / 1000);
+        if (elapsed !== undefined && elapsed >= SCAN_SECONDS) {
+          finishScan();
+          return;
+        }
+        rafRef.current = requestAnimationFrame(tick);
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    }
   }
 
   function finishScan() {
@@ -272,16 +289,22 @@ function computeBpmAndHrv(samples) {
   const gridSize = Math.floor(duration * SAMPLE_HZ);
   if (gridSize < SAMPLE_HZ * 5) return null;
 
-  const grid = new Array(gridSize).fill(null);
-  for (const s of samples) {
-    const idx = Math.min(gridSize - 1, Math.round(s.t * SAMPLE_HZ));
-    grid[idx] = s.value;
-  }
-  // Fill any gaps by carrying the previous value forward.
-  let last = grid.find((v) => v !== null) ?? 0;
-  for (let i = 0; i < grid.length; i++) {
-    if (grid[i] === null) grid[i] = last;
-    else last = grid[i];
+  // Resample onto a uniform grid via linear interpolation between the two
+  // nearest real samples (more accurate than carrying the previous value
+  // forward, especially with the now-irregular requestVideoFrameCallback timing).
+  const grid = new Array(gridSize).fill(0);
+  let sIdx = 0;
+  for (let i = 0; i < gridSize; i++) {
+    const t = i / SAMPLE_HZ;
+    while (sIdx < samples.length - 2 && samples[sIdx + 1].t < t) sIdx++;
+    const a = samples[sIdx];
+    const b = samples[Math.min(sIdx + 1, samples.length - 1)];
+    if (b.t === a.t) {
+      grid[i] = a.value;
+    } else {
+      const frac = (t - a.t) / (b.t - a.t);
+      grid[i] = a.value + (b.value - a.value) * Math.max(0, Math.min(1, frac));
+    }
   }
 
   // Rolling average detrend — window ~1.5s.
@@ -295,28 +318,37 @@ function computeBpmAndHrv(samples) {
     return v - avg;
   });
 
-  // Peak detection with a minimum distance matching MAX_BPM (no two peaks closer
-  // than the fastest physiologically plausible heartbeat).
+  // Peak detection with a minimum distance matching MAX_BPM, plus sub-frame
+  // parabolic interpolation: a 3-point quadratic fit through each peak and its
+  // neighbors recovers timing precision the raw ~30fps grid alone can't give,
+  // which matters here since HRV values are the same order of magnitude as
+  // one frame interval.
   const minDistance = Math.round((60 / MAX_BPM) * SAMPLE_HZ);
-  const peaks = [];
+  const peakTimesSec = [];
+  let lastPeakIdx = -Infinity;
   for (let i = 1; i < detrended.length - 1; i++) {
     if (
       detrended[i] > detrended[i - 1] &&
       detrended[i] > detrended[i + 1] &&
-      detrended[i] > 0
+      detrended[i] > 0 &&
+      i - lastPeakIdx >= minDistance
     ) {
-      if (peaks.length === 0 || i - peaks[peaks.length - 1] >= minDistance) {
-        peaks.push(i);
-      }
+      const y0 = detrended[i - 1];
+      const y1 = detrended[i];
+      const y2 = detrended[i + 1];
+      const denom = y0 - 2 * y1 + y2;
+      const offset = denom !== 0 ? 0.5 * (y0 - y2) / denom : 0;
+      const refinedIdx = i + Math.max(-0.5, Math.min(0.5, offset));
+      peakTimesSec.push(refinedIdx / SAMPLE_HZ);
+      lastPeakIdx = i;
     }
   }
 
-  if (peaks.length < 4) return null; // not enough clean peaks for a confident reading
+  if (peakTimesSec.length < 4) return null; // not enough clean peaks for a confident reading
 
-  // Peak-to-peak intervals in milliseconds (converted from frame counts).
   const intervalsMs = [];
-  for (let i = 1; i < peaks.length; i++) {
-    intervalsMs.push(((peaks[i] - peaks[i - 1]) / SAMPLE_HZ) * 1000);
+  for (let i = 1; i < peakTimesSec.length; i++) {
+    intervalsMs.push((peakTimesSec[i] - peakTimesSec[i - 1]) * 1000);
   }
 
   const avgIntervalMs = intervalsMs.reduce((a, b) => a + b, 0) / intervalsMs.length;
@@ -324,9 +356,16 @@ function computeBpmAndHrv(samples) {
 
   if (bpm < MIN_BPM || bpm > MAX_BPM) return null;
 
-  // RMSSD needs at least 2 successive-difference pairs, i.e. 3+ intervals.
+  // Signal-quality gate: if peak-to-peak intervals are wildly inconsistent
+  // (high coefficient of variation), the peaks themselves are likely noise,
+  // not real heartbeats — don't compute HRV from a shaky peak sequence.
+  const meanInterval = avgIntervalMs;
+  const variance =
+    intervalsMs.reduce((a, b) => a + (b - meanInterval) ** 2, 0) / intervalsMs.length;
+  const coeffOfVariation = Math.sqrt(variance) / meanInterval;
+
   let hrv = null;
-  if (intervalsMs.length >= 3) {
+  if (intervalsMs.length >= 3 && coeffOfVariation < 0.25) {
     const successiveDiffsSquared = [];
     for (let i = 1; i < intervalsMs.length; i++) {
       const diff = intervalsMs[i] - intervalsMs[i - 1];
@@ -337,7 +376,7 @@ function computeBpmAndHrv(samples) {
     hrv = Math.round(Math.sqrt(meanSquaredDiff));
 
     if (hrv < MIN_PLAUSIBLE_HRV || hrv > MAX_PLAUSIBLE_HRV) {
-      hrv = null; // reading too noisy to trust — show BPM only, skip HRV this scan
+      hrv = null; // still outside plausible bounds — too noisy to trust
     }
   }
 

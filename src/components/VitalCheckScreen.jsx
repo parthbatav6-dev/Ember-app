@@ -7,6 +7,12 @@ const SAMPLE_HZ = 30; // approx frame sampling rate we aim for
 const MIN_BPM = 40;
 const MAX_BPM = 180;
 
+// Physiologically plausible RMSSD range for a resting scan — anything outside
+// this is almost certainly peak-detection noise from a 30s single scan, not a
+// real HRV reading. Elite athletes rarely exceed ~150ms.
+const MIN_PLAUSIBLE_HRV = 10;
+const MAX_PLAUSIBLE_HRV = 150;
+
 export default function VitalCheckScreen({ userId, onClose }) {
   const [phase, setPhase] = useState("intro"); // intro | scanning | result | error
   const [progress, setProgress] = useState(0);
@@ -213,10 +219,14 @@ export default function VitalCheckScreen({ userId, onClose }) {
         {phase === "result" && bpm && (
           <>
             <h2 className="vc-title">{bpm} <span className="vc-bpm-unit">bpm</span></h2>
-            {hrv !== null && (
+            {hrv !== null ? (
               <p className="vc-hrv-row">
                 HRV <strong>{hrv} ms</strong>
                 <span className="vc-hrv-hint"> — track over multiple scans for a trend</span>
+              </p>
+            ) : (
+              <p className="vc-hrv-row vc-hrv-unclear">
+                HRV reading wasn't clear this time — try again holding very still
               </p>
             )}
             <p className="vc-body">Reading saved to your Vital Check history.</p>
@@ -325,6 +335,10 @@ function computeBpmAndHrv(samples) {
     const meanSquaredDiff =
       successiveDiffsSquared.reduce((a, b) => a + b, 0) / successiveDiffsSquared.length;
     hrv = Math.round(Math.sqrt(meanSquaredDiff));
+
+    if (hrv < MIN_PLAUSIBLE_HRV || hrv > MAX_PLAUSIBLE_HRV) {
+      hrv = null; // reading too noisy to trust — show BPM only, skip HRV this scan
+    }
   }
 
   return { bpm, hrv };

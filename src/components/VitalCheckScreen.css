@@ -50,6 +50,11 @@
   font-size: 12px;
 }
 
+.vc-hrv-unclear {
+  color: #57534E;
+  font-style: italic;
+}
+
 .vc-body {
   color: #E7DFD3;
   font-size: 14px;

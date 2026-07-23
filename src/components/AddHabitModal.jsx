@@ -14,6 +14,11 @@ import "./AddHabitModal.css";
  *   faster habit creation, less decision fatigue at signup.
  * - onCreated(newHabit) is called on success so the parent
  *   (CheckInScreen) can refetch or optimistically append.
+ * - token_tier: 1 = workout/exercise (verified via Vital Check before
+ *   tokens are awarded), 3 = everything else (streaks/badges only,
+ *   no tokens — the verified-tokens restructure). Only shown for
+ *   pillar === "body", since Tier 1 specifically means real
+ *   cardiovascular exertion, not every body-pillar habit.
  * -------------------------------------------------------------
  */
 
@@ -43,6 +48,7 @@ export default function AddHabitModal({ userId, onClose, onCreated }) {
   const [error, setError] = useState(null);
   const [pillar, setPillar] = useState("mind");
   const [intensity, setIntensity] = useState(null);
+  const [isWorkout, setIsWorkout] = useState(false);
 
   function toggleDay(day) {
     setCustomDays((prev) =>
@@ -74,6 +80,7 @@ export default function AddHabitModal({ userId, onClose, onCreated }) {
         frequency,
         pillar,
         intensity,
+        token_tier: pillar === "body" && isWorkout ? 1 : 3,
         custom_days: frequency === "custom" ? customDays : null,
         reminder_time: reminderTime || null,
         is_active: true,
@@ -187,6 +194,23 @@ export default function AddHabitModal({ userId, onClose, onCreated }) {
       <button type="button" className={`ember-pillar-btn ${intensity === "moderate" ? "is-selected" : ""}`} onClick={() => setIntensity("moderate")}>Moderate</button>
       <button type="button" className={`ember-pillar-btn ${intensity === "low" ? "is-selected" : ""}`} onClick={() => setIntensity("low")}>Low</button>
     </div>
+  </div>
+)}
+{pillar === "body" && (
+  <div className="ember-field">
+    <label className="ember-checkbox-label">
+      <input
+        type="checkbox"
+        checked={isWorkout}
+        onChange={(e) => setIsWorkout(e.target.checked)}
+      />
+      This is a real workout — verify with Vital Check to earn impact tokens
+    </label>
+    <p className="ember-field-hint">
+      A Vital Check scan showing your heart rate elevated within 15 minutes of
+      check-in confirms it happened. Without this, the habit still tracks
+      streaks and badges normally, just without tokens.
+    </p>
   </div>
 )}
 

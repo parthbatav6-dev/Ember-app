@@ -13,6 +13,9 @@ import "./EditHabitModal.css";
  *   used everywhere else (fetch, streak limit trigger).
  * - onUpdated(updatedHabit) / onDeleted(habitId) let the parent
  *   (CheckInScreen) update its local list without a full refetch.
+ * - token_tier can be toggled here too (only shown for body-pillar
+ *   habits, same rule as AddHabitModal) in case a habit's real-world
+ *   nature changes after creation.
  * -------------------------------------------------------------
  */
 
@@ -22,6 +25,7 @@ export default function EditHabitModal({ habit, onClose, onUpdated, onDeleted })
   const [name, setName] = useState(habit.name);
   const [icon, setIcon] = useState(habit.icon);
   const [reminderTime, setReminderTime] = useState(habit.reminder_time || "");
+  const [isWorkout, setIsWorkout] = useState(habit.token_tier === 1);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -39,7 +43,12 @@ export default function EditHabitModal({ habit, onClose, onUpdated, onDeleted })
 
     const { data, error: updateErr } = await supabase
       .from("habits")
-      .update({ name: name.trim(), icon, reminder_time: reminderTime || null })
+      .update({
+        name: name.trim(),
+        icon,
+        reminder_time: reminderTime || null,
+        token_tier: habit.pillar === "body" && isWorkout ? 1 : 3,
+      })
       .eq("id", habit.id)
       .select()
       .single();
@@ -113,6 +122,23 @@ export default function EditHabitModal({ habit, onClose, onUpdated, onDeleted })
                 ))}
               </div>
             </div>
+
+            {habit.pillar === "body" && (
+              <div className="ember-field">
+                <label className="ember-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={isWorkout}
+                    onChange={(e) => setIsWorkout(e.target.checked)}
+                  />
+                  This is a real workout — verify with Vital Check to earn impact tokens
+                </label>
+                <p className="ember-field-hint">
+                  A Vital Check scan showing your heart rate elevated within 15
+                  minutes of check-in confirms it happened.
+                </p>
+              </div>
+            )}
 
             <div className="ember-field">
               <label htmlFor="editReminderTime">Reminder (optional)</label>

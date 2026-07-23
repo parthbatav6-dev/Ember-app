@@ -369,3 +369,7 @@
   0%, 100% { box-shadow: 0 0 26px #60A5FA; }
   50% { box-shadow: 0 0 36px #60A5FA; }
 }
+.ember-tier-badge {
+  font-size: 11px;
+  margin-left: 2px;
+}

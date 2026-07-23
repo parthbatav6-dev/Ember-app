@@ -222,3 +222,22 @@
 .ember-modal-delete-cancel:hover {
   border-color: var(--ash);
 }
+.ember-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.ember-checkbox-label input[type="checkbox"] {
+  margin-top: 3px;
+  accent-color: #EA580C;
+}
+
+.ember-field-hint {
+  color: #57534E;
+  font-size: 12px;
+  margin: 6px 0 0;
+  line-height: 1.4;
+}

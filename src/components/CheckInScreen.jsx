@@ -29,22 +29,35 @@ import "./CheckInScreen.css";
  * Wiring notes for your Supabase project (already live schema):
  *
  * - habits: id, user_id, name, icon, color, frequency, is_active,
- *           current_streak, longest_streak, last_checkin_date
+ *           current_streak, longest_streak, last_checkin_date, token_tier
  * - habit_checkins: id, habit_id, user_id, checkin_date, note, created_at
  * - A DB trigger (on_checkin_insert) already updates current_streak
  *   on habits automatically when a checkin row is inserted.
  *   -> This component does NOT recompute streaks client-side.
  *      It just inserts the checkin and re-fetches habits after.
  *
+ * VERIFIED TOKENS RESTRUCTURE (token_tier):
+ * - token_tier 3 (default): tokens are never awarded for this habit's
+ *   check-ins — streaks/badges/celebration copy all work exactly as
+ *   before, just no award_tokens() call. Most habits stay tier 3.
+ * - token_tier 1 (workout): tokens ARE awarded, but only if a recent
+ *   Vital Check scan (within the last 15 minutes) shows heart rate
+ *   meaningfully elevated above the user's own resting baseline —
+ *   real physiological evidence the workout happened. No new sensor
+ *   or screen needed; reuses the existing vital_checks table.
+ * - Tier 2 (focus sessions) isn't a habits row — FocusTimer.jsx's
+ *   existing screen-presence rule already IS verification, no change
+ *   needed there.
+ *
  * Replace MOCK_HABITS below with a real fetch (see fetchHabits()).
  * -------------------------------------------------------------
  */
 
 const MOCK_HABITS = [
-  { id: "1", name: "Cold shower", icon: "💧", current_streak: 12, checkedInToday: false },
-  { id: "2", name: "Read 20 pages", icon: "📖", current_streak: 34, checkedInToday: true },
-  { id: "3", name: "No sugar", icon: "🍬", current_streak: 3, checkedInToday: false },
-  { id: "4", name: "Gym", icon: "🏋️", current_streak: 58, checkedInToday: false },
+  { id: "1", name: "Cold shower", icon: "💧", current_streak: 12, checkedInToday: false, token_tier: 3 },
+  { id: "2", name: "Read 20 pages", icon: "📖", current_streak: 34, checkedInToday: true, token_tier: 3 },
+  { id: "3", name: "No sugar", icon: "🍬", current_streak: 3, checkedInToday: false, token_tier: 3 },
+  { id: "4", name: "Gym", icon: "🏋️", current_streak: 58, checkedInToday: false, token_tier: 1 },
 ];
 
 // Ember glow intensity scales with streak length — the signature element.
@@ -107,8 +120,8 @@ export default function CheckInScreen({ userId }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showPillarsModal, setShowPillarsModal] = useState(false);
   const [showImpactModal, setShowImpactModal] = useState(false);
-  const [burstHabitId, setBurstHabitId] = useState(null);
-  const [showVitalCheck, setShowVitalCheck] = useState(false);// unknown | default | granted | denied
+  const [showVitalCheck, setShowVitalCheck] = useState(false);
+  const [burstHabitId, setBurstHabitId] = useState(null);// unknown | default | granted | denied
 
   useEffect(() => {
     if (typeof Notification !== "undefined") {
@@ -148,7 +161,7 @@ useEffect(() => {
 
     const { data: habitRows, error: habitsErr } = await supabase
       .from("habits")
-      .select("id, name, icon, current_streak, is_active, reminder_time, pillar")
+      .select("id, name, icon, current_streak, is_active, reminder_time, pillar, token_tier")
       .eq("user_id", userId)
       .eq("is_active", true)
       .order("created_at", { ascending: true });
@@ -202,6 +215,32 @@ setLast7Checkins(weekCheckins || []);
   setUsername(data?.username || "");
 }
 
+  // Verified-tokens check for a Tier 1 (workout) habit: was there a Vital
+  // Check scan in the last 15 minutes showing BPM meaningfully above this
+  // user's own resting baseline (average of their last 5 scans)? Reuses the
+  // existing vital_checks table — no new sensor, no new screen.
+  async function checkWorkoutVerification() {
+    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+
+    const { data: recentScans } = await supabase
+      .from("vital_checks")
+      .select("bpm, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(6);
+
+    if (!recentScans || recentScans.length === 0) return false;
+
+    const latest = recentScans[0];
+    if (latest.created_at < fifteenMinAgo) return false; // not recent enough
+
+    const priorScans = recentScans.slice(1);
+    if (priorScans.length === 0) return false; // no baseline to compare against yet
+
+    const baselineBpm = priorScans.reduce((sum, s) => sum + s.bpm, 0) / priorScans.length;
+    return latest.bpm >= baselineBpm * 1.2; // at least 20% elevation
+  }
+
   async function toggleCheckIn(habit) {
     if (habit.checkedInToday) return; // MVP: no un-checking, keep it simple + honest
 
@@ -238,25 +277,42 @@ setTimeout(() => setBurstHabitId(null), 700);
       setError("Couldn't save that check-in. Try again.");
       return;
     }
-const { data: signalRow } = await supabase
-  .from("signals")
-  .select("id")
-  .eq("habit_id", habit.id)
-  .eq("occurred_at", insertedCheckin.created_at)
-  .single();
 
-const { error: tokenErr } = await supabase.rpc("award_tokens", {
-  p_user_id: userId,
-  p_signal_id: signalRow?.id,
-  p_token_type: "checkin",
-  p_occurred_at: new Date().toISOString(),
-});
-if (tokenErr) console.error("award_tokens failed:", tokenErr);
-setCelebration(getRandomMessage(CHECKIN_MESSAGES));
-setTimeout(() => setCelebration(null), 4000);
-if (habit.pillar === "body") {
-  setShowRecoveryPrompt(true);
-}
+    // Verified-tokens routing: Tier 3 habits never call award_tokens at all.
+    // Tier 1 (workout) habits only call it if the workout was verified via a
+    // recent elevated Vital Check scan.
+    if (habit.token_tier === 3) {
+      setCelebration(getRandomMessage(CHECKIN_MESSAGES));
+      setTimeout(() => setCelebration(null), 4000);
+    } else if (habit.token_tier === 1) {
+      const verified = await checkWorkoutVerification();
+
+      if (verified) {
+        const { data: signalRow } = await supabase
+          .from("signals")
+          .select("id")
+          .eq("habit_id", habit.id)
+          .eq("occurred_at", insertedCheckin.created_at)
+          .single();
+
+        const { error: tokenErr } = await supabase.rpc("award_tokens", {
+          p_user_id: userId,
+          p_signal_id: signalRow?.id,
+          p_token_type: "workout",
+          p_occurred_at: new Date().toISOString(),
+        });
+        if (tokenErr) console.error("award_tokens failed:", tokenErr);
+        setCelebration(getRandomMessage(CHECKIN_MESSAGES));
+        setTimeout(() => setCelebration(null), 4000);
+      } else {
+        setCelebration("Checked in — scan Vital Check right after your workout next time to earn tokens for it.");
+        setTimeout(() => setCelebration(null), 5000);
+      }
+    }
+
+    if (habit.pillar === "body") {
+      setShowRecoveryPrompt(true);
+    }
 
     // Re-sync with DB-computed streak (trigger already updated it server-side)
     fetchHabits();
@@ -350,6 +406,7 @@ if (habit.pillar === "body") {
                 onClick={() => setHeatmapHabit(habit)}
               >
                 {habit.name}
+                {habit.token_tier === 1 && <span className="ember-tier-badge" title="Verified habit — earns tokens">🪙</span>}
                 <span className="ember-name-hint">▸</span>
               </button>
               <div className="ember-streak">
@@ -414,7 +471,7 @@ if (habit.pillar === "body") {
             setHabits((prev) =>
               prev.map((h) =>
                 h.id === updatedHabit.id
-                  ? { ...h, name: updatedHabit.name, icon: updatedHabit.icon }
+                  ? { ...h, name: updatedHabit.name, icon: updatedHabit.icon, token_tier: updatedHabit.token_tier }
                   : h
               )
             );

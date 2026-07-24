@@ -7,7 +7,7 @@ const SAMPLE_HZ = 30; // approx frame sampling rate we aim for
 const MIN_BPM = 40;
 const MAX_BPM = 180;
 
-export default function VitalCheckScreen({ userId, onClose }) {
+export default function VitalCheckScreen({ userId, tier, onClose }) {
   const [phase, setPhase] = useState("intro"); // intro | scanning | result | error
   const [progress, setProgress] = useState(0);
   const [bpm, setBpm] = useState(null);
@@ -41,6 +41,24 @@ export default function VitalCheckScreen({ userId, onClose }) {
 
   async function startScan() {
     setErrorMsg(null);
+
+    // Free-tier weekly scan cap — 10 scans per rolling 7 days. Paid tier is
+    // unlimited. Checked before requesting camera access at all.
+    if (tier !== "paid") {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("vital_checks")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .gte("created_at", sevenDaysAgo);
+
+      if ((count || 0) >= 10) {
+        setErrorMsg("You've used all 10 free Vital Check scans this week. Upgrade for unlimited scans.");
+        setPhase("error");
+        return;
+      }
+    }
+
     samplesRef.current = [];
     setBpm(null);
     setHrv(null);

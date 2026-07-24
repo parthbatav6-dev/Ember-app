@@ -218,27 +218,49 @@ setLast7Checkins(weekCheckins || []);
   // Verified-tokens check for a Tier 1 (workout) habit: was there a Vital
   // Check scan in the last 15 minutes showing BPM meaningfully above this
   // user's own resting baseline (average of their last 5 scans)? Reuses the
-  // existing vital_checks table — no new sensor, no new screen.
-  async function checkWorkoutVerification() {
+  // existing vital_checks table — no new sensor, no new screen. Tokens are
+  // only awarded on High (10) or Stable (5) HRV — a Low HRV reading means
+  // the body is showing strain, so the check-in still counts for streaks,
+  // but no tokens are awarded for that session. A scan with no HRV category
+  // (poor signal) falls back to a BPM-elevation-based amount instead.
+  async function getWorkoutVerification() {
     const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
     const { data: recentScans } = await supabase
       .from("vital_checks")
-      .select("bpm, created_at")
+      .select("bpm, hrv_category, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(6);
 
-    if (!recentScans || recentScans.length === 0) return false;
+    if (!recentScans || recentScans.length === 0) return { verified: false };
 
     const latest = recentScans[0];
-    if (latest.created_at < fifteenMinAgo) return false; // not recent enough
+    if (latest.created_at < fifteenMinAgo) return { verified: false }; // not recent enough
 
     const priorScans = recentScans.slice(1);
-    if (priorScans.length === 0) return false; // no baseline to compare against yet
+    if (priorScans.length === 0) return { verified: false }; // no baseline to compare against yet
 
     const baselineBpm = priorScans.reduce((sum, s) => sum + s.bpm, 0) / priorScans.length;
-    return latest.bpm >= baselineBpm * 1.2; // at least 20% elevation
+    const elevationRatio = latest.bpm / baselineBpm;
+    if (elevationRatio < 1.2) return { verified: false }; // needs at least 20% elevation
+
+    if (latest.hrv_category === "low") {
+      // Real strain signal — check-in still saves, but no tokens this time.
+      return { verified: false, reason: "low_hrv" };
+    }
+
+    let tokenAmount;
+    if (latest.hrv_category === "high") tokenAmount = 10;
+    else if (latest.hrv_category === "stable") tokenAmount = 5;
+    else {
+      // No HRV category available for this scan — fall back to scaling by
+      // BPM elevation alone, clamped into the same 5-10 range.
+      const clampedElevation = Math.min(0.6, Math.max(0.2, elevationRatio - 1));
+      tokenAmount = Math.round(5 + ((clampedElevation - 0.2) / (0.6 - 0.2)) * 5);
+    }
+
+    return { verified: true, tokenAmount };
   }
 
   async function toggleCheckIn(habit) {
@@ -285,7 +307,7 @@ setTimeout(() => setBurstHabitId(null), 700);
       setCelebration(getRandomMessage(CHECKIN_MESSAGES));
       setTimeout(() => setCelebration(null), 4000);
     } else if (habit.token_tier === 1) {
-      const verified = await checkWorkoutVerification();
+      const { verified, tokenAmount, reason } = await getWorkoutVerification();
 
       if (verified) {
         const { data: signalRow } = await supabase
@@ -300,10 +322,14 @@ setTimeout(() => setBurstHabitId(null), 700);
           p_signal_id: signalRow?.id,
           p_token_type: "workout",
           p_occurred_at: new Date().toISOString(),
+          p_override_tokens: tokenAmount,
         });
         if (tokenErr) console.error("award_tokens failed:", tokenErr);
         setCelebration(getRandomMessage(CHECKIN_MESSAGES));
         setTimeout(() => setCelebration(null), 4000);
+      } else if (reason === "low_hrv") {
+        setCelebration("Checked in — your HRV reading was low, so no tokens this time. Rest matters too.");
+        setTimeout(() => setCelebration(null), 5000);
       } else {
         setCelebration("Checked in — scan Vital Check right after your workout next time to earn tokens for it.");
         setTimeout(() => setCelebration(null), 5000);
@@ -526,7 +552,7 @@ setTimeout(() => setBurstHabitId(null), 700);
   <PodScreen userId={userId} tier={userTier} onClose={() => setShowPod(false)} />
 )}
 {showVitalCheck && (
-  <VitalCheckScreen userId={userId} onClose={() => setShowVitalCheck(false)} />
+  <VitalCheckScreen userId={userId} tier={userTier} onClose={() => setShowVitalCheck(false)} />
 )}
 <SideMenu
   isOpen={showMenu}
